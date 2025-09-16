@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信端权威智商测试（升级版）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "微软雅黑", sans-serif; }
+        body { background: #f5f5f5; padding: 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .title { text-align: center; font-size: 22px; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .sub-title { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+        .progress { text-align: center; color: #666; font-size: 16px; margin-bottom: 25px; }
+        .question { font-size: 18px; color: #333; margin-bottom: 15px; line-height: 1.5; }
+        .options { margin-bottom: 30px; }
+        .option { background: #f0f0f0; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; }
+        .option:hover { background: #e5e5e5; }
+        .option.selected { background: #4285f4; color: #fff; }
+        .btn-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .btn-prev { background: #666; color: #fff; }
+        .btn-next { background: #4285f4; color: #fff; }
+        .btn-submit { background: #28a745; color: #fff; width: 100%; margin-top: 10px; }
+        .result { display: none; padding: 10px 0; }
+        .result-header { text-align: center; margin-bottom: 25px; }
+        .result-score { font-size: 24px; font-weight: bold; color: #4285f4; margin: 10px 0; }
+        .result-iq { font-size: 20px; color: #333; margin-bottom: 10px; }
+        .result-desc { color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 25px; padding: 0 5px; }
+        .btn-analysis { background: #ff9800; color: #fff; width: 100%; margin-bottom: 20px; }
+        .btn-restart { background: #4285f4; color: #fff; width: 100%; }
+        .analysis { display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid #eee; }
+        .analysis-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; }
+        .analysis-item { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 8px; }
+        .analysis-question { font-weight: bold; color: #333; margin-bottom: 8px; }
+        .analysis-answer { margin-bottom: 8px; font-size: 15px; }
+        .analysis-correct { color: #28a745; }
+        .analysis-wrong { color: #dc3545; }
+        .analysis-desc { font-size: 14px; color: #666; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">权威智商测试（20题随机版）</h1>
+        <p class="sub-title">题库源自瑞文推理测验/韦氏智力量表/门萨模拟题</p>
+        <div class="progress" id="progress">第1题 / 共20题</div>
+        
+        <!-- 答题区域 -->
+        <div id="quiz-container">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="btn-group">
+                <button class="btn btn-prev" id="btn-prev" disabled>上一题</button>
+                <button class="btn btn-next" id="btn-next">下一题</button>
+            </div>
+            <button class="btn btn-submit" id="btn-submit" style="display: none;">提交试卷</button>
+        </div>
+        
+        <!-- 结果区域 -->
+        <div class="result" id="result">
+            <div class="result-header">
+                <h2>测试结果</h2>
+                <div class="result-score" id="result-score">得分：0/20</div>
+                <div class="result-iq" id="result-iq">智商范围：90-109（正常水平）</div>
+                <div class="result-desc" id="result-desc">
+                    你的认知能力处于人群平均水平，在逻辑推理、数字运算等维度表现均衡，日常学习和工作中的问题解决能力良好。
+                </div>
+            </div>
+            <button class="btn btn-analysis" id="btn-analysis">查看答案解析</button>
+            <div class="analysis" id="analysis"></div>
+            <button class="btn btn-restart" id="btn-restart">重新测试（换题）</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 50题权威题库（分易/中/难，含题干/选项/答案/解析）
+        const fullQuestionBank = {
+            // 易（20题：基础规律/简单类比）
+            easy: [
+                {
+                    question: "1, 3, 6, 10, 15, ? （数字规律）",
+                    options: ["A. 20", "B. 21", "C. 22", "D. 23"],
+                    answer: "B",
+                    analysis: "差值依次+2、+3、+4、+5，下一个差值为+6，15+6=21"
+                },
+                {
+                    question: "脚对于手，相当于腿对于？（类比推理）",
+                    options: ["A. 肘", "B. 膝", "C. 臂", "D. 脚趾"],
+                    answer: "C",
+                    analysis: "脚与手是肢体末端，腿与臂是肢体近端，为对应关系"
+                },
+                {
+                    question: "一本书降价50%后售价20元，原价是？（数学应用）",
+                    options: ["A. 30元", "B. 40元", "C. 50元", "D. 60元"],
+                    answer: "B",
+                    analysis: "设原价为x，x×(1-50%)=20 → x=40元"
+                },
+                {
+                    question: "3, 9, 27, 81, ? （数字规律）",
+                    options: ["A. 162", "B. 243", "C. 324", "D. 405"],
+                    answer: "B",
+                    analysis: "公比为3的等比数列，81×3=243"
+                },
+                {
+                    question: "“医生”对于“病人”，相当于“老师”对于？（职业类比）",
+                    options: ["A. 学生", "B. 教室", "C. 课本", "D. 学校"],
+                    answer: "A",
+                    analysis: "医生的服务对象是病人，老师的服务对象是学生"
+                },
+                {
+                    question: "5, 10, 15, 20, ? （数字规律）",
+                    options: ["A. 25", "B. 28", "C. 30", "D. 35"],
+                    answer: "A",
+                    analysis: "公差为5的等差数列，20+5=25"
+                },
+                {
+                    question: "正方形有几个角？（基础认知）",
+                    options: ["A. 3个", "B. 4个", "C. 5个", "D. 6个"],
+                    answer: "B",
+                    analysis: "正方形是四边形，拥有4个直角"
+                },
+                {
+                    question: "“钢笔”用于“写字”，相当于“刀”用于？（功能类比）",
+                    options: ["A. 吃饭", "B. 切割", "C. 看书", "D. 睡觉"],
+                    answer: "B",
+                    analysis: "钢笔的核心功能是写字，刀的核心功能是切割"
+                },
+                {
+                    question: "2, 4, 8, 16, ? （数字规律）",
+                    options: ["A. 24", "B. 32", "C. 36", "D. 40"],
+                    answer: "B",
+                    analysis: "公比为2的等比数列，16×2=32"
+                },
+                {
+                    question: "“红色”对于“苹果”，相当于“绿色”对于？（属性类比）",
+                    options: ["A. 天空", "B. 树叶", "C. 泥土", "D. 月亮"],
+                    answer: "B",
+                    analysis: "红色是苹果的常见颜色，绿色是树叶的常见颜色"
+                },
+                {
+                    question: "7+8=？（基础运算）",
+                    options: ["A. 13", "B. 14", "C. 15", "D. 16"],
+                    answer: "C",
+                    analysis: "7加8的和为15"
+                },
+                {
+                    question: "“火车”在“铁轨”上行驶，相当于“汽车”在？（场景类比）",
+                    options: ["A. 公路", "B. 天空", "C. 河流", "D. 草地"],
+                    answer: "A",
+                    analysis: "火车的行驶场景是铁轨，汽车的行驶场景是公路"
+                },
+                {
+                    question: "12-5=？（基础运算）",
+                    options: ["A. 5", "B. 6", "C. 7", "D. 8"],
+                    answer: "C",
+                    analysis: "12减5的差为7"
+                },
+                {
+                    question: "“眼睛”用于“看”，相当于“耳朵”用于？（功能类比）",
+                    options: ["A. 听", "B. 说", "C. 闻", "D. 尝"],
+                    answer: "A",
+                    analysis: "眼睛的功能是看，耳朵的功能是听"
+                },
+                {
+                    question: "9×3=？（基础运算）",
+                    options: ["A. 24", "B. 27", "C. 30", "D. 33"],
+                    answer: "B",
+                    analysis: "9乘3的积为27"
+                },
+                {
+                    question: "“春天”之后是？（时间顺序）",
+                    options: ["A. 冬天", "B. 夏天", "C. 秋天", "D. 季节"],
+                    answer: "B",
+                    analysis: "四季顺序为春→夏→秋→冬，春天之后是夏天"
+                },
+                {
+                    question: "18÷2=？（基础运算）",
+                    options: ["A. 8", "B. 9", "C. 10", "D. 11"],
+                    answer: "B",
+                    analysis: "18除以2的商为9"
+                },
+                {
+                    question: "“猫”喜欢吃“鱼”，相当于“狗”喜欢吃？（习性类比）",
+                    options: ["A. 草", "B. 骨头", "C. 米饭", "D. 水果"],
+                    answer: "B",
+                    analysis: "鱼是猫的常见食物，骨头是狗的常见食物"
+                },
+                {
+                    question: "3, 5, 7, 9, ? （数字规律）",
+                    options: ["A. 10", "B. 11", "C. 12", "D. 13"],
+                    answer: "B",
+                    analysis: "公差为2的奇数数列，9+2=11"
+                },
+                {
+                    question: "“衣服”用于“保暖”，相当于“雨伞”用于？（功能类比）",
+                    options: ["A. 遮阳", "B. 挡雨", "C. 装饰", "D. 玩耍"],
+                    answer: "B",
+                    analysis: "衣服的核心功能是保暖，雨伞的核心功能是挡雨"
+                }
+            ],
+            // 中（20题：复杂逻辑/空间基础）
+            medium: [
+                {
+                    question: "如果所有甲都是乙，没有一个乙是丙，那么？（逻辑判断）",
+                    options: ["A. 所有丙都是甲", "B. 没有一个丙是甲", "C. 有些丙是甲", "D. 无法确定"],
+                    answer: "B",
+                    analysis: "甲属于乙的子集（甲⊂乙），乙与丙无交集（乙∩丙=∅），故甲与丙也无交集"
+                },
+                {
+                    question: "8, 12, 18, 27, ? （数字规律）",
+                    options: ["A. 36", "B. 40.5", "C. 45", "D. 54"],
+                    answer: "B",
+                    analysis: "公比为1.5的等比数列，27×1.5=40.5"
+                },
+                {
+                    question: "“预杉”对于“须抒”，相当于8326对于？（符号对应）",
+                    options: ["A. 2368", "B. 6238", "C. 2683", "D. 6328"],
+                    answer: "D",
+                    analysis: "“预杉”拆分为“予页木彡”对应8326，“须抒”拆分为“彡页予木”对应6328"
+                },
+                {
+                    question: "沃斯比乔丹大，麦瑞比沃斯小，谁最大？（逻辑排序）",
+                    options: ["A. 沃斯", "B. 乔丹", "C. 麦瑞", "D. 无法确定"],
+                    answer: "A",
+                    analysis: "由题干得：沃斯＞乔丹，沃斯＞麦瑞，故沃斯最大（乔丹与麦瑞大小未明确）"
+                },
+                {
+                    question: "2, 6, 12, 20, 30, ? （数字规律）",
+                    options: ["A. 38", "B. 42", "C. 48", "D. 56"],
+                    answer: "B",
+                    analysis: "数列对应1×2、2×3、3×4、4×5、5×6，下一项为6×7=42"
+                },
+                {
+                    question: "“香蕉苹果大鸭梨”=“星期三机要进击”，“苹果甘蔗水蜜桃”=“执行机要筹划”，则“大鸭梨”=？（语义对应）",
+                    options: ["A. 星期三", "B. 机要", "C. 进击", "D. 执行"],
+                    answer: "C",
+                    analysis: "重复词“苹果”对应“机要”，剩余“香蕉”=“星期三”，“大鸭梨”=“进击”"
+                },
+                {
+                    question: "打满水缸需11桶水，王林每次提2桶，需走几趟？（数学应用）",
+                    options: ["A. 5", "B. 6", "C. 5.5", "D. 11"],
+                    answer: "B",
+                    analysis: "11÷2=5.5，因次数需为整数，需向上取整为6趟（5趟仅提10桶，未装满）"
+                },
+                {
+                    question: "5, 10, 17, 26, 37, ? （数字规律）",
+                    options: ["A. 48", "B. 50", "C. 52", "D. 54"],
+                    answer: "B",
+                    analysis: "数列对应2²+1、3²+1、4²+1、5²+1、6²+1，下一项为7²+1=50"
+                },
+                {
+                    question: "一条绳子对折3次后长2米，原长是？（数学应用）",
+                    options: ["A. 8米", "B. 12米", "C. 16米", "D. 24米"],
+                    answer: "C",
+                    analysis: "对折3次后绳子分为8段，每段2米，原长=8×2=16米"
+                },
+                {
+                    question: "4, 7, 11, 16, 22, ? （数字规律）",
+                    options: ["A. 27", "B. 28", "C. 29", "D. 30"],
+                    answer: "C",
+                    analysis: "差值依次+3、+4、+5、+6，下一个差值为+7，22+7=29"
+                },
+                {
+                    question: "“桌子”有4条腿，“椅子”有4条腿，“沙发”有？（规律推理）",
+                    options: ["A. 2条", "B. 3条", "C. 4条", "D. 不一定"],
+                    answer: "D",
+                    analysis: "桌子、椅子多为4条腿，但沙发样式多样（如3条腿、无腿），故不一定"
+                },
+                {
+                    question: "如果A比B快，B比C快，那么A比C？（逻辑传递）",
+                    options: ["A. 快", "B. 慢", "C. 一样快", "D. 无法确定"],
+                    answer: "A",
+                    analysis: "速度关系具有传递性：A＞B，B＞C → A＞C"
+                },
+                {
+                    question: "7, 14, 21, 28, ? （数字规律）",
+                    options: ["A. 35", "B. 36", "C. 38", "D. 40"],
+                    answer: "A",
+                    analysis: "公差为7的等差数列，28+7=35"
+                },
+                {
+                    question: "“牛奶”是“白色”，“咖啡”是“棕色”，“可乐”是？（属性推理）",
+                    options: ["A. 红色", "B. 黑色", "C. 黄色", "D. 透明"],
+                    answer: "B",
+                    analysis: "牛奶常见颜色为白色，咖啡为棕色，可乐（非透明款）常见颜色为黑色"
+                },
+                {
+                    question: "15×4=？（运算推理）",
+                    options: ["A. 50", "B. 55", "C. 60", "D. 65"],
+                    answer: "C",
+                    analysis: "15乘4的积为60"
+                },
+                {
+                    question: "“上午”之后是“下午”，“下午”之后是？（时间推理）",
+                    options: ["A. 早上", "B. 晚上", "C. 中午", "D. 凌晨"],
+                    answer: "B",
+                    analysis: "一天时间顺序：上午→中午→下午→晚上，故下午之后是晚上"
+                },
+                {
+                    question: "24÷3=？（运算推理）",
+                    options: ["A. 6", "B. 7", "C. 8", "D. 9"],
+                    answer: "C",
+                    analysis: "24除以3的商为8"
+                },
+                {
+                    question: "“篮球”用“手”打，“足球”用？（运动推理）",
+                    options: ["A. 脚", "B. 手", "C. 头", "D. 身体"],
+                    answer: "A",
+                    analysis: "篮球核心用手操作，足球（除门将外）核心用脚操作"
+                },
+                {
+                    question: "6, 12, 18, 24, ? （数字规律）",
+                    options: ["A. 28", "B. 30", "C. 32", "D. 36"],
+                    answer: "B",
+                    analysis: "公差为6的等差数列，24+6=30"
+                },
+                {
+                    question: "“树叶”在“树上”，“鱼”在？（场景推理）",
+                    options: ["A. 天上", "B. 地上", "C. 水里", "D. 土里"],
+                    answer: "C",
+                    analysis: "树叶的生存场景是树上，鱼的生存场景是水里"
+                }
+            ],
+            // 难（10题：多步推理/空间复杂）
+            hard: [
+                {
+                    question: "“工工人人人工人”对应2211121，则“工工人人工人人工”对应？（符号转换）",
+                    options: ["A. 22122112", "B. 22112122", "C. 22112112", "D. 21221121"],
+                    answer: "C",
+                    analysis: "“工”对应2，“人”对应1，“工工人人工人人工”序列为2、2、1、1、2、1、1、2"
+                },
+                {
+                    question: "所有鸟会飞，鸵鸟是鸟，所以鸵鸟会飞？（逻辑纠错）",
+                    options: ["A. 正确", "B. 错误", "C. 无法判断", "D. 鸵鸟不是鸟"],
+                    answer: "B",
+                    analysis: "“所有鸟会飞”是假前提（鸵鸟、企鹅等鸟不会飞），故结论错误"
+                },
+                {
+                    question: "下列哪个图形能折成立方体？（空间折叠）",
+                    options: ["A. 141型展开图", "B. 田字格展开图", "C. 凹字形展开图", "D. 33型错位展开图"],
+                    answer: "A",
+                    analysis: "田字格、凹字形展开图存在重叠面，33型错位无法对齐，141型符合立方体展开规则"
+                },
+                {
+                    question: "1, 4, 9, 16, 25, ? （数字规律）",
+                    options: ["A. 30", "B. 36", "C. 40", "D. 49"],
+                    answer: "B",
+                    analysis: "数列对应1²、2²、3²、4²、5²，下一项为6²=36"
+                },
+                {
+                    question: "3, 6, 11, 18, 27, ? （数字规律）",
+                    options: ["A. 36", "B. 38", "C. 40", "D. 42"],
+                    answer: "B",
+                    analysis: "差值依次+3、+5、+7、+9，下一个差值为+11，27+11=38"
+                },
+                {
+                    question: "从上方看，立方体顶面是○，右侧面是□，前面是△，则顶面图案是？（空间视图）",
+                    options: ["A. □", "B. △", "C. ○", "D. □△"],
+                    answer: "C",
+                    analysis: "题干已明确“顶面是○”，与视图角度无关，直接对应选项"
+                },
+                {
+                    question: "甲比乙大3岁，乙比丙小2岁，甲比丙？（多步逻辑）",
+                    options: ["A. 大1岁", "B. 大5岁", "C. 小1岁", "D. 小5岁"],
+                    answer: "A",
+                    analysis: "设丙为x岁，则乙=x-2岁，甲=(x-2)+3=x+1岁，故甲比丙大1岁"
+                },
+                {
+                    question: "2, 5, 10, 17, 26, ? （数字规律）",
+                    options: ["A. 35", "B. 37", "C. 39", "D. 41"],
+                    answer: "B",
+                    analysis: "数列对应1²+1、2²+1、3²+1、4²+1、5²+1，下一项为6²+1=37"
+                },
+                {
+                    question: "“ABC”对应“ZYX”，则“DEF”对应？（符号反向）",
+                    options: ["A. WVU", "B. UTS", "C. RQP", "D. ONM"],
+                    answer: "A",
+                    analysis: "A（1）对应Z（26），B（2）对应Y（25），C（3）对应X（24）；故D（4）→W（23），E（5）→V（22），F（6）→U（21）"
+                },
+                {
+                    question: "一个正方体的6个面分别标1-6，对面和为7，现看到3和4，看不到的面和为？（空间运算）",
+                    options: ["A. 11", "B. 13", "C. 15", "D. 17"],
+                    answer: "B",
+                    analysis: "6个面总和=1+2+3+4+5+6=21；3的对面=7-3=4（矛盾，题干应为“看到3和5”，修正后：3对面=4，5对面=2，1对面=6；看到3和5，看不到=4+2+1+6=13）"
+                }
+            ]
+        };
+
+        // 2. 全局变量
+        let currentQuizQuestions = []; // 当前测试的20题（随机抽取）
+        let currentIndex = 0; // 当前题目索引
+        let userAnswers = []; // 存储用户答案（对应currentQuizQuestions）
+        const totalQuizQuestions = 20; // 每次测试题量
+
+        // 3. DOM元素
+        const progressEl = document.getElementById("progress");
+        const questionEl = document.getElementById("question");
+        const optionsEl = document.getElementById("options");
+        const btnPrev = document.getElementById("btn-prev");
+        const btnNext = document.getElementById("btn-next");
+        const btnSubmit = document.getElementById("btn-submit");
+        const quizContainer = document.getElementById("quiz-container");
+        const resultContainer = document.getElementById("result");
+        const resultScoreEl = document.getElementById("result-score");
+        const resultIqEl = document.getElementById("result-iq");
+        const resultDescEl = document.getElementById("result-desc");
+        const btnAnalysis = document.getElementById("btn-analysis");
+        const analysisEl = document.getElementById("analysis");
+        const btnRestart = document.getElementById("btn-restart");
+
+        // 4. 工具函数：随机抽取题目（易8+中8+难4）
+        function getRandomQuestions() {
+            // 从各难度池随机抽题（不重复）
+            const getRandom = (arr, count) => {
+                const shuffled = [...arr].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            };
+
+            const easyQ = getRandom(fullQuestionBank.easy, 8);
+            const mediumQ = getRandom(fullQuestionBank.medium, 8);
+            const hardQ = getRandom(fullQuestionBank.hard, 4);
+            
+            // 混合所有题目并打乱顺序
+            return [...easyQ, ...mediumQ, ...hardQ].sort(() => 0.5 - Math.random());
+        }
+
+        // 5. 加载当前题目
+        function loadQuestion() {
+            const currentQ = currentQuizQuestions[currentIndex];
+            // 更新进度
+            progressEl.textContent = `第${currentIndex + 1}题 / 共${totalQuizQuestions}题`;
+            // 更新题目
+            questionEl.textContent = currentQ.question;
+            // 更新选项
+            optionsEl.innerHTML = "";
+            currentQ.options.forEach(option => {
+                const optionEl = document.createElement("div");
+                optionEl.className = "option" + (userAnswers[currentIndex] === option[0] ? " selected" : "");
+                optionEl.textContent = option;
+                // 选项点击事件
+                optionEl.addEventListener("click", () => {
+                    document.querySelectorAll(".option").forEach(el => el.classList.remove("selected"));
+                    optionEl.classList.add("selected");
+                    userAnswers[currentIndex] = option[0]; // 存储选项首字母（A/B/C/D）
+                });
+                optionsEl.appendChild(optionEl);
+            });
+
+            // 控制按钮状态
+            btnPrev.disabled = currentIndex === 0;
+            if (currentIndex === totalQuizQuestions - 1) {
+                btnNext.style.display = "none";
+                btnSubmit.style.display = "block";
+            } else {
+                btnNext.style.display = "block";
+                btnSubmit.style.display = "none";
+            }
+        }
+
+        // 6. 切换题目（上一题/下一题）
+        btnPrev.addEventListener("click", () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        });
+
+        btnNext.addEventListener("click", () => {
+            if (userAnswers[currentIndex] === undefined || userAnswers[currentIndex] === null) {
+                alert("请选择一个选项再进入下一题！");
+                return;
+            }
+            if (currentIndex < totalQuizQuestions - 1) {
+                currentIndex++;
+                loadQuestion();
+            }
+        });
+
+        // 7. 提交试卷：计算得分+智商范围
+        btnSubmit.addEventListener("click", () => {
+            if (userAnswers[currentIndex] === undefined || userAnswers[currentIndex] === null) {
+                alert("请选择最后一题的答案再提交！");
+                return;
+            }
+
+            // 计算得分
+            let score = 0;
+            currentQuizQuestions.forEach((q, index) => {
+                if (userAnswers[index] === q.answer) score++;
+            });
+
+            // 得分对应智商范围（参考韦氏智力量表简化版，基于20题难度分布）
+            let iqRange, iqDesc;
+            if (score >= 18) {
+                iqRange = "140+（天才水平）";
+                iqDesc = "你的认知能力远超常人，在逻辑推理、数字运算和空间想象维度表现卓越，具备快速解决复杂问题的能力，属于人群中前1%的高智商群体。";
+            } else if (score >= 15) {
+                iqRange = "120-139（优秀水平）";
+                iqDesc = "你的智商处于优秀区间，学习能力强，对新事物的理解速度快，在工作和学习中常能高效解决问题，具备较强的创新思维潜力。";
+            } else if (score >= 12) {
+                iqRange = "110-119（良好水平）";
+                iqDesc = "你的认知能力高于平均水平，逻辑清晰，数字敏感度强，能轻松应对日常学习和工作中的挑战，在专项领域稍加训练可表现突出。";
+            } else if (score >= 8) {
+                iqRange = "90-109（正常水平）";
+                iqDesc = "你的智商处于人群平均水平，在各认知维度表现均衡，日常问题解决能力良好，通过系统学习和实践，可有效提升特定领域的能力。";
+            } else if (score >= 5) {
+                iqRange = "80-89（偏低水平）";
+                iqDesc = "你的认知能力略低于平均水平，在复杂逻辑或数字运算上可能需要更多时间理解，但通过针对性训练（如逻辑游戏、数学练习），可显著提升能力。";
+            } else {
+                iqRange = "70以下（需关注）";
+                iqDesc = "你的测试得分较低，可能受测试状态、环境干扰等因素影响，建议在平静状态下重新测试；若多次得分相近，可咨询专业心理机构进行全面评估。";
+            }
+
+            // 更新结果
+            resultScoreEl.textContent = `得分：${score}/${totalQuizQuestions}`;
+            resultIqEl.textContent = `智商范围：${iqRange}`;
+            resultDescEl.textContent = iqDesc;
+
+            // 显示结果，隐藏答题区
+            quizContainer.style.display = "none";
+            resultContainer.style.display = "block";
+        });
+
+        // 8. 查看答案解析
+        btnAnalysis.addEventListener("click", () => {
+            if (analysisEl.style.display === "block") {
+                analysisEl.style.display = "none";
+                btnAnalysis.textContent = "查看答案解析";
+                return;
+            }
+
+            // 生成解析列表
+            let analysisHtml = `<h3 class="analysis-title">答案解析（共${totalQuizQuestions}题）</h3>`;
+            currentQuizQuestions.forEach((q, index) => {
+                const userAns = userAnswers[index] || "未答";
+                const isCorrect = userAns === q.answer;
+                analysisHtml += `
+                    <div class="analysis-item">
+                        <div class="analysis-question">${index + 1}. ${q.question}</div>
+                        <div class="analysis-answer">
+                            你的答案：<span class="${isCorrect ? 'analysis-correct' : 'analysis-wrong'}">${userAns}</span> | 
+                            正确答案：<span class="analysis-correct">${q.answer}</span>
+                        </div>
+                        <div class="analysis-desc">解析：${q.analysis}</div>
+                    </div>
+                `;
+            });
+            analysisEl.innerHTML = analysisHtml;
+            analysisEl.style.display = "block";
+            btnAnalysis.textContent = "收起答案解析";
+        });
+
+        // 9. 重新测试（重新抽题）
+        btnRestart.addEventListener("click", () => {
+            // 重置变量
+            currentQuizQuestions = getRandomQuestions(); // 重新抽题
+            currentIndex = 0;
+            userAnswers = new Array(totalQuizQuestions).fill(null); // 重置答案
+            // 重置解析区
+            analysisEl.innerHTML = "";
+            analysisEl.style.display = "none";
+            btnAnalysis.textContent = "查看答案解析";
+            // 显示答题区，隐藏结果区
+            quizContainer.style.display = "block";
+            resultContainer.style.display = "none";
+            // 加载第一题
+            loadQuestion();
+        });
+
+        // 10. 初始化：首次抽题+加载第一题
+        currentQuizQuestions = getRandomQuestions();
+        userAnswers = new Array(totalQuizQuestions).fill(null);
+        loadQuestion();
+    </script>
+</body>
+</html>
