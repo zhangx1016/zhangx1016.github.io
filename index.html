@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magical Christmas Tree V2</title>
+    <title>Magical Christmas Tree V6 - Stronger Bloom</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background-color: #020502; font-family: 'Helvetica Neue', sans-serif; }
@@ -23,6 +23,7 @@
             margin-top: 20px;
             font-family: 'Great Vibes', cursive;
             font-size: 5rem;
+            /* 金色渐变和辉光效果 */
             background: linear-gradient(to bottom, #cfc09f 22%, #634f2c 24%, #cfc09f 26%, #cfc09f 27%, #ffecb3 40%, #3a2c0f 78%); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
@@ -31,7 +32,6 @@
             opacity: 0;
             animation: fadeIn 2s forwards 1s;
         }
-
         @keyframes fadeIn { to { opacity: 1; } }
 
         /* 2. 左下角摄像头与光效轨迹 */
@@ -46,13 +46,8 @@
             transform: scaleX(-1); /* 镜像显示 */
             pointer-events: auto;
         }
-        #input-video {
-            width: 100%; height: 100%; object-fit: cover;
-            opacity: 0.6; /* 稍微暗一点，突出光效 */
-        }
-        #trail-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        }
+        #input-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        #trail-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         /* 3. 右下角控制区 */
         #controls-area {
@@ -60,7 +55,6 @@
             display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
             pointer-events: auto;
         }
-
         .btn {
             background: linear-gradient(135deg, #d4af37, #aa8a29);
             color: #051005; padding: 10px 24px; border: none; border-radius: 25px;
@@ -76,12 +70,10 @@
             color: #d4af37; font-size: 20px; letter-spacing: 2px;
             transition: opacity 0.5s;
         }
-        
         .hint-text {
             color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;
             text-shadow: 0 0 5px black;
         }
-
         input[type="file"] { display: none; }
     </style>
 
@@ -130,20 +122,33 @@
 
         // --- 配置 ---
         const CONFIG = {
-            colors: { green: 0x2F5A38, gold: 0xFFD700, red: 0xC41E3A, white: 0xFFFFFF },
-            particleCount: 800, // 总粒子数
+            colors: { 
+                green: 0x2F5A38, 
+                gold: 0xFFD700, 
+                red: 0xC41E3A, 
+                emissiveGold: 0x995500 
+            },
+            particleCount: 1500,     
+            emojiCount: 75,          
             treeHeight: 30,
             treeRadius: 12,
             scatterRadius: 35,
-            emojis: ['🎁', '🧦', '🔔', '👔', '🎅', '❤️', '🌳', '⛄'] // 粒子贴图库
+            emojis: ['🎁', '🧦', '🔔', '❤️', '🎅', '👔'] 
         };
+        
+        // 随机颜色列表，用于 3D 粒子
+        const RANDOM_COLORS = [
+            { color: CONFIG.colors.gold, emissive: CONFIG.colors.emissiveGold, intensity: 0.8 }, // 增强光效
+            { color: CONFIG.colors.red, emissive: 0x550000, intensity: 0.5 },
+            { color: CONFIG.colors.green, emissive: 0x003300, intensity: 0.3 }
+        ];
 
         const state = {
             mode: 'TREE',
             handDetected: false,
             focusedPhotoIndex: -1,
             photos: [],
-            particles: [] // 存储所有混合粒子对象
+            particles: []
         };
 
         // --- 场景初始化 ---
@@ -169,13 +174,13 @@
         dirLight.position.set(10, 20, 20);
         scene.add(dirLight);
 
-        // --- 后处理 (辉光) ---
+        // --- 后处理 (辉光加强) ---
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0.3;
-        bloomPass.strength = 1.0;
-        bloomPass.radius = 0.5;
+        bloomPass.threshold = 0.15;
+        bloomPass.strength = 2.0; // 进一步加强光效
+        bloomPass.radius = 0.6;
         composer.addPass(bloomPass);
 
         // --- 辅助函数：创建Emoji纹理 ---
@@ -183,7 +188,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 128; canvas.height = 128;
             const ctx = canvas.getContext('2d');
-            ctx.font = '90px sans-serif'; // 大字体以保证清晰
+            ctx.font = '90px sans-serif'; 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = color;
@@ -192,48 +197,71 @@
             tex.colorSpace = THREE.SRGBColorSpace;
             return tex;
         }
-
-        // --- 粒子系统构建 (混合几何体与Sprite) ---
-        const particleGroup = new THREE.Group();
-        scene.add(particleGroup);
-
+        
+        // --- 粒子系统构建 (尺寸放大) ---
+        
+        // 放大几何体基础尺寸 (乘以 2)
         const geometries = {
-            box: new THREE.BoxGeometry(0.8, 0.8, 0.8),
-            tri: new THREE.TetrahedronGeometry(0.6),
+            sphere: new THREE.SphereGeometry(0.24, 8, 8),   // 0.12 -> 0.24
+            box: new THREE.BoxGeometry(0.4, 0.4, 0.4),      // 0.2 -> 0.4
+            tri: new THREE.TetrahedronGeometry(0.3),  // 0.15 -> 0.3
         };
-        const materials = {
-            gold: new THREE.MeshStandardMaterial({ color: CONFIG.colors.gold, metalness: 0.9, roughness: 0.1 }),
-            red: new THREE.MeshStandardMaterial({ color: CONFIG.colors.red, metalness: 0.3, roughness: 0.4 }),
-            green: new THREE.MeshStandardMaterial({ color: CONFIG.colors.green, metalness: 0.1, roughness: 0.8 })
-        };
+        
+        function createRandomMaterial() {
+            const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
+            return new THREE.MeshStandardMaterial({ 
+                color: randomColor.color, 
+                metalness: 0.8, 
+                roughness: 0.3,
+                emissive: randomColor.emissive, 
+                emissiveIntensity: randomColor.intensity
+            });
+        }
 
-        // 预生成 Emoji 材质库
         const emojiMaterials = CONFIG.emojis.map(e => new THREE.SpriteMaterial({ 
             map: createEmojiTexture(e), 
             transparent: true 
         }));
 
+        const particleGroup = new THREE.Group();
+        scene.add(particleGroup);
+
         function initParticles() {
+            let emojiCounter = 0;
+
             for (let i = 0; i < CONFIG.particleCount; i++) {
                 let mesh;
-                const typeRand = Math.random();
-
-                // 30% 几何体, 70% Emoji
-                if (typeRand < 0.15) {
-                    mesh = new THREE.Mesh(geometries.box, Math.random() > 0.5 ? materials.gold : materials.red);
-                } else if (typeRand < 0.3) {
-                    mesh = new THREE.Mesh(geometries.tri, materials.gold);
-                } else {
-                    const matIndex = Math.floor(Math.random() * emojiMaterials.length);
+                
+                // 95% 几率生成 3D 几何体，并随机选择材质
+                if (Math.random() < 0.95) {
+                    let geometry;
+                    const geoRand = Math.random();
+                    if (geoRand < 0.33) {
+                        geometry = geometries.sphere;
+                    } else if (geoRand < 0.66) {
+                        geometry = geometries.box;
+                    } else {
+                        geometry = geometries.tri;
+                    }
+                    mesh = new THREE.Mesh(geometry, createRandomMaterial());
+                } 
+                
+                // 仅在计数允许时生成 Emoji 装饰 (5%)
+                if (!mesh && i < CONFIG.emojiCount) {
+                    const matIndex = emojiCounter % emojiMaterials.length; 
                     mesh = new THREE.Sprite(emojiMaterials[matIndex]);
-                    mesh.scale.set(2, 2, 2); // Sprite需要大一点
+                    mesh.scale.set(1, 1, 1); // Emoji Sprite 放大
+                    emojiCounter++;
+                } else if (!mesh) {
+                    // Fallback 
+                    mesh = new THREE.Mesh(geometries.sphere, createRandomMaterial());
                 }
 
-                // 计算树形位置 (螺旋圆锥)
-                const y = (Math.random() - 0.5) * CONFIG.treeHeight; // -H/2 ~ H/2
+                // Tree Pos (Spiral Cone)
+                const y = (Math.random() - 0.5) * CONFIG.treeHeight;
                 const normY = (y + CONFIG.treeHeight/2) / CONFIG.treeHeight;
-                const r = CONFIG.treeRadius * (1 - normY) + 1; // 顶部收窄
-                const angle = Math.random() * Math.PI * 2 * 6; // 多圈螺旋
+                const r = CONFIG.treeRadius * (1 - normY) + 0.5;
+                const angle = Math.random() * Math.PI * 2 * 6;
                 
                 const treePos = new THREE.Vector3(
                     Math.cos(angle) * r,
@@ -241,7 +269,7 @@
                     Math.sin(angle) * r
                 );
 
-                // 计算散开位置 (球形分布)
+                // Scatter Pos (Sphere)
                 const sR = CONFIG.scatterRadius * Math.cbrt(Math.random());
                 const sTheta = Math.random() * Math.PI * 2;
                 const sPhi = Math.acos(2 * Math.random() - 1);
@@ -252,12 +280,15 @@
                 );
 
                 mesh.position.copy(treePos);
-                mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                if (mesh.type === 'Mesh') {
+                    mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                    // 粒子随机缩放范围也放大一倍
+                    mesh.scale.setScalar(Math.random() * 0.2 + 0.4); // 0.4 ~ 0.6
+                }
                 
                 mesh.userData = {
                     treePos: treePos,
                     scatterPos: scatterPos,
-                    velocity: new THREE.Vector3(0,0,0) // 漂浮用
                 };
 
                 particleGroup.add(mesh);
@@ -266,7 +297,21 @@
         }
         initParticles();
 
-        // --- 照片系统 ---
+
+        // --- 顶部金色粒子光球 (尺寸放大) ---
+        const starGeo = new THREE.SphereGeometry(0.7, 16, 16); // 0.35 -> 0.7
+        const starMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.colors.gold,
+            metalness: 1.0,
+            roughness: 0.1,
+            emissive: CONFIG.colors.gold,
+            emissiveIntensity: 6.0 // 进一步增强光效
+        });
+        const treeStar = new THREE.Mesh(starGeo, starMat);
+        treeStar.position.set(0, CONFIG.treeHeight / 2 + 1, 0);
+        scene.add(treeStar);
+
+        // --- 照片系统 (保持不变) ---
         const photoGroup = new THREE.Group();
         scene.add(photoGroup);
 
@@ -279,7 +324,6 @@
             const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geo, mat);
 
-            // 金色边框
             const border = new THREE.Mesh(
                 new THREE.PlaneGeometry(w + 0.3, h + 0.3),
                 new THREE.MeshStandardMaterial({ color: CONFIG.colors.gold, metalness: 1, roughness: 0.2 })
@@ -306,15 +350,14 @@
             state.photos.push(mesh);
         }
 
-        // --- 核心逻辑与状态切换 ---
+        // --- 核心逻辑与状态切换 (保持不变) ---
         function transitionTo(newMode) {
             if(state.mode === newMode) return;
             state.mode = newMode;
             
-            const duration = 1.2; // 稍微加快过渡
+            const duration = 1.2;
             const ease = "power2.inOut";
 
-            // 粒子动画
             state.particles.forEach(p => {
                 const target = newMode === 'TREE' ? p.userData.treePos : p.userData.scatterPos;
                 gsap.to(p.position, {
@@ -322,7 +365,7 @@
                     duration: duration + Math.random()*0.5,
                     ease: ease
                 });
-                if(p.type === 'Mesh') { // 只有几何体旋转，Sprite总是面朝相机
+                if(p.type === 'Mesh') {
                     gsap.to(p.rotation, {
                         x: Math.random()*Math.PI, y: Math.random()*Math.PI,
                         duration: duration
@@ -330,7 +373,6 @@
                 }
             });
 
-            // 照片动画
             state.photos.forEach(p => {
                 if(newMode === 'FOCUS') return;
                 const tPos = newMode === 'TREE' ? p.userData.treePos : p.userData.scatterPos;
@@ -341,7 +383,6 @@
                 gsap.to(p.scale, { x: 1, y: 1, z: 1, duration: 0.5 });
             });
 
-            // 相机复位
             if(newMode === 'TREE') {
                 gsap.to(camera.position, { x: 0, y: 5, z: 55, duration: 1.5 });
                 gsap.to(particleGroup.rotation, { x: 0, y: 0, z: 0, duration: 1.5 });
@@ -356,7 +397,6 @@
             state.focusedPhotoIndex = (state.focusedPhotoIndex + 1) % state.photos.length;
             const target = state.photos[state.focusedPhotoIndex];
             
-            // 将照片移到相机前方
             const camDir = new THREE.Vector3();
             camera.getWorldDirection(camDir);
             const dest = camera.position.clone().add(camDir.multiplyScalar(15));
@@ -400,14 +440,12 @@
         const videoElement = document.getElementById('input-video');
         const trailCanvas = document.getElementById('trail-canvas');
         const trailCtx = trailCanvas.getContext('2d');
-        let trailPoints = []; // 存储光线路径点
+        let trailPoints = [];
 
-        // 设置Trail Canvas尺寸
         function resizeTrailCanvas() {
             trailCanvas.width = videoElement.clientWidth;
             trailCanvas.height = videoElement.clientHeight;
         }
-        window.addEventListener('resize', resizeTrailCanvas);
 
         function drawTrail(x, y) {
             trailPoints.push({ x, y, life: 1.0 });
@@ -417,13 +455,11 @@
             trailCtx.lineCap = 'round';
             trailCtx.lineJoin = 'round';
 
-            // 绘制金色光线
             if(trailPoints.length > 1) {
                 trailCtx.beginPath();
                 trailCtx.moveTo(trailPoints[0].x, trailPoints[0].y);
                 for(let i=1; i<trailPoints.length; i++) {
-                    const p = trailPoints[i];
-                    trailCtx.lineTo(p.x, p.y);
+                    trailCtx.lineTo(trailPoints[i].x, trailPoints[i].y);
                 }
                 trailCtx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
                 trailCtx.lineWidth = 4;
@@ -431,9 +467,6 @@
                 trailCtx.shadowColor = '#FFD700';
                 trailCtx.stroke();
             }
-
-            // 更新生命周期 (简单淡出效果)
-            // 这里为了性能，每帧只绘制最新状态，可以添加更复杂的粒子逻辑
         }
 
         function onResults(results) {
@@ -444,24 +477,18 @@
                 state.handDetected = true;
                 const landmarks = results.multiHandLandmarks[0];
 
-                // 1. 获取食指指尖 (Index Tip - 8) 绘制轨迹
-                // MediaPipe坐标是归一化(0-1)，需要映射到canvas尺寸
                 const tipX = landmarks[8].x * trailCanvas.width;
                 const tipY = landmarks[8].y * trailCanvas.height;
                 drawTrail(tipX, tipY);
 
-                // 2. 交互逻辑优化
-                // 判断五指张开 (指尖 y < 关节 y - 阈值)
                 const fingersOpen = [8, 12, 16, 20].map(i => landmarks[i].y < landmarks[i-2].y);
                 const openCount = fingersOpen.filter(Boolean).length;
-                const isThumbOpen = landmarks[4].x < landmarks[3].x; // 简单的右手判定
+                const isThumbOpen = landmarks[4].x < landmarks[3].x;
                 const totalOpen = openCount + (isThumbOpen ? 1 : 0);
 
-                // 判断捏合 (食指8 与 拇指4 的距离)
                 const pinchDist = Math.hypot(landmarks[8].x - landmarks[4].x, landmarks[8].y - landmarks[4].y);
-                const isPinching = pinchDist < 0.08; // 调高阈值，更容易触发
+                const isPinching = pinchDist < 0.08; 
 
-                // 状态机
                 if (isPinching && state.mode === 'SCATTER') {
                     focusPhoto();
                 } else if (totalOpen >= 4) {
@@ -471,16 +498,13 @@
                     transitionTo('TREE');
                 }
 
-                // 3. 旋转控制 (灵敏度优化)
                 if (state.mode === 'SCATTER') {
                     const palmX = landmarks[9].x; 
                     const palmY = landmarks[9].y;
                     
-                    // 增加系数 4.0，让小幅度的手部移动产生明显的旋转
                     const rotX = (palmY - 0.5) * 4.0; 
                     const rotY = (palmX - 0.5) * 4.0;
                     
-                    // 施加旋转
                     particleGroup.rotation.y += rotY * 0.02;
                     particleGroup.rotation.x += rotX * 0.02;
                     photoGroup.rotation.y += rotY * 0.02;
@@ -494,19 +518,18 @@
             }
         }
 
-        // 初始化MediaPipe
         const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
         hands.setOptions({
             maxNumHands: 1,
             modelComplexity: 1,
-            minDetectionConfidence: 0.6, // 降低一点以提高连续性
+            minDetectionConfidence: 0.6,
             minTrackingConfidence: 0.6
         });
         hands.onResults(onResults);
 
         const camUtils = new Camera(videoElement, {
             onFrame: async () => { await hands.send({image: videoElement}); },
-            width: 320, height: 240 // 降低处理分辨率以提高性能
+            width: 320, height: 240
         });
         camUtils.start();
 
@@ -514,14 +537,16 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // 自动微旋转
             if(state.mode === 'TREE') {
                 particleGroup.rotation.y += 0.003;
                 photoGroup.rotation.y += 0.003;
             } else if (state.mode === 'SCATTER' && !state.handDetected) {
-                // 如果散开且没检测到手，缓慢漂浮
                 particleGroup.rotation.y += 0.001;
             }
+            
+            // 顶部光球的微小缩放动画
+            const scaleFactor = 0.05 * Math.sin(Date.now() / 500) + 1.05;
+            treeStar.scale.setScalar(scaleFactor);
 
             composer.render();
         }
@@ -532,6 +557,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
         });
+        window.addEventListener('resize', resizeTrailCanvas);
 
         animate();
 
