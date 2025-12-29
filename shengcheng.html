@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Word作业助手 V43.0 - 无损修复版</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-item { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        button { width: 100%; padding: 15px; background: #1890ff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        #log { margin-top: 20px; height: 150px; background: #001529; color: #52c41a; padding: 10px; border-radius: 4px; overflow-y: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="text-align:center">Word 作业助手 V43.0</h2>
+    <div class="input-item"><label>Excel 数据</label><input type="file" id="ex" accept=".xlsx"></div>
+    <div class="input-item"><label>Word 模板</label><input type="file" id="wd" accept=".docx" multiple></div>
+    <div class="input-item"><label>签名 (PNG)</label><input type="file" id="pg" accept=".png"></div>
+    <button onclick="go()">开始处理 (V33逻辑+结构优化)</button>
+    <div id="log">就绪。已修复 V42 导致的文档损坏问题。</div>
+</div>
+
+<script>
+    let db = [];
+    let signBuf = null;
+    let signWH = { w: 0, h: 0 };
+    const WNS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+    function log(m) {
+        const d = document.getElementById('log');
+        d.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${m}</div>`;
+        d.scrollTop = d.scrollHeight;
+    }
+
+    document.getElementById('ex').onchange = async (e) => {
+        const b = await e.target.files[0].arrayBuffer();
+        const s = XLSX.read(b).Sheets[XLSX.read(b).SheetNames[0]];
+        db = XLSX.utils.sheet_to_json(s).map(r => ({
+            id: String(r["学号"]||""), name: String(r["姓名"]||""), major: String(r["专业"]||""),
+            clz: String(r["班级"]||""), tchr: String(r["教师姓名"]||r["教师"]||""),
+            loc: String(r["实验地点"]||""), total: String(r["合计"]||r["总分"]||""),
+            exps: Array.from({length: 12}, (_,i)=>({ d: String(r[`日期${i+1}`]||""), s: String(r[`成绩${i+1}`]||"") }))
+        }));
+        log("Excel 载入: " + db.length + " 条");
+    };
+
+    document.getElementById('pg').onchange = async (e) => {
+        const f = e.target.files[0];
+        signBuf = await f.arrayBuffer();
+        const i = new Image();
+        i.onload = () => { signWH = { w: i.width, h: i.height }; };
+        i.src = URL.createObjectURL(f);
+    };
+
+    async function go() {
+        const files = document.getElementById('wd').files;
+        if(!db.length || !files.length) return alert("文件缺失");
+        const zipOut = new JSZip();
+
+        for(let i=0; i<Math.min(db.length, files.length); i++) {
+            const stu = db[i];
+            const zip = await JSZip.loadAsync(await files[i].arrayBuffer());
+            const blob = await transform(zip, stu);
+            zipOut.file(`${stu.id}${stu.name}.docx`, blob);
+            log("处理完毕: " + stu.name);
+        }
+        saveAs(await zipOut.generateAsync({type:"blob"}), `V43_Final_${Date.now()}.zip`);
+    }
+
+    async function transform(zip, stu) {
+        let xml = await zip.file("word/document.xml").async("string");
+        const doc = new DOMParser().parseFromString(xml, "application/xml");
+        const ps = Array.from(doc.getElementsByTagNameNS(WNS, "p"));
+
+        // 1. 首页替换 (无损文本覆盖)
+        const rules = [
+            {k:/专\s*业[:：]?/, v:"专    业：" + stu.major},
+            {k:/班\s*级[:：]?/, v:"班    级：" + stu.clz},
+            {k:/学\s*号[:：]?/, v:"学    号：" + stu.id},
+            {k:/学生姓名[:：]?/, v:"学生姓名：" + stu.name},
+            {k:/教师姓名[:：]?/, v:"教师姓名：" + stu.tchr}
+        ];
+        ps.slice(0, 100).forEach(p => {
+            const txt = p.textContent;
+            rules.forEach(r => {
+                if(r.k.test(txt) && !txt.includes("日期") && !txt.includes("地点")) safeReplace(p, r.v);
+            });
+        });
+
+        // 2. 表格全局穿透 (V33逻辑重写)
+        const tbls = doc.getElementsByTagNameNS(WNS, "tbl");
+        let expPtr = 0;
+        for(let t=0; t<tbls.length; t++) {
+            const trs = tbls[t].getElementsByTagNameNS(WNS, "tr");
+            const tTxt = tbls[t].textContent;
+
+            // 第二页成绩汇总
+            if(tTxt.includes("项目名称") || tTxt.includes("最终") || tTxt.includes("1-6")) {
+                for(let r=0; r<trs.length; r++) {
+                    const tcs = trs[r].getElementsByTagNameNS(WNS, "tc");
+                    const sn = tcs[0]?.textContent.trim();
+                    if(/^\d+$/.test(sn)) {
+                        const d = stu.exps[parseInt(sn)-1];
+                        if(d) {
+                            safeReplace(tcs[2].getElementsByTagNameNS(WNS, "p")[0], d.d);
+                            safeReplace(tcs[3].getElementsByTagNameNS(WNS, "p")[0], d.s);
+                        }
+                    } else if(sn && (sn.includes("最终") || sn.includes("合计"))) {
+                        safeReplace(tcs[1].getElementsByTagNameNS(WNS, "p")[0], stu.total);
+                    }
+                }
+            }
+            // 题头表替换
+            if(tTxt.includes("专") && tTxt.includes("学") && tTxt.includes("点")) {
+                if(expPtr < stu.exps.length) {
+                    const data = stu.exps[expPtr];
+                    const cells = Array.from(tbls[t].getElementsByTagNameNS(WNS, "tc"));
+                    cells.forEach((cell, idx) => {
+                        const ct = cell.textContent;
+                        if(/专\s*业/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], stu.major);
+                        if(/班\s*级/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], stu.clz);
+                        if(/学\s*号/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], stu.id);
+                        if(/姓\s*名/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], stu.name);
+                        if(/时\s*间/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], data.d);
+                        if(/地\s*点/.test(ct)) safeReplace(cells[idx+1].getElementsByTagNameNS(WNS, "p")[0], stu.loc);
+                    });
+                    expPtr++;
+                }
+            }
+        }
+
+        // 3. 评语/图片/打钩
+        let rid = "";
+        if(signBuf) {
+            const f = `word/media/sig_${Math.random().toString(36).slice(5)}.png`;
+            zip.file(f, signBuf);
+            rid = await addRel(zip, f);
+        }
+
+        let exNo = 0;
+        for(let i=0; i<ps.length; i++) {
+            if(ps[i].textContent.includes("1、实验步骤编写明确")) {
+                const s = parseFloat(stu.exps[exNo]?.s || 0);
+                for(let k=1; k<=3; k++) {
+                    const hit = (k===1 && s>=30) || (k===2 && s>=20 && s<30) || (k===3 && s<20);
+                    const ts = ps[i+k]?.getElementsByTagNameNS(WNS, "t");
+                    if(ts) {
+                        for(let t of ts) if(/[（\(]\s*[）\)]/.test(t.textContent)) t.textContent = t.textContent.replace(/[（\(]\s*[）\)]/, hit ? "（√）" : "（  ）");
+                    }
+                }
+                for(let j=i; j<i+15; j++) {
+                    if(ps[j].textContent.includes("成绩") && ps[j].textContent.includes("签章")) {
+                        safeReplace(ps[j], `成绩：${stu.exps[exNo].s}   指导教师签章：`);
+                        unlock(ps[j], doc); 
+                        if(rid) insertImg(doc, ps[j], rid);
+                    }
+                    if(ps[j].textContent.includes("批阅日期")) {
+                        safeReplace(ps[j], `批阅日期：${stu.exps[exNo].d}`);
+                        break;
+                    }
+                }
+                exNo++;
+            }
+        }
+
+        zip.file("word/document.xml", new XMLSerializer().serializeToString(doc));
+        return await zip.generateAsync({type:"blob"});
+    }
+
+    // --- 工具函数：无损文本替换 (关键：不删除节点，只覆盖文字) ---
+    function safeReplace(p, val) {
+        if(!p) return;
+        const ts = p.getElementsByTagNameNS(WNS, "t");
+        if(ts.length > 0) {
+            ts[0].textContent = val;
+            for(let i=1; i<ts.length; i++) ts[i].textContent = "";
+        } else {
+            const r = p.ownerDocument.createElementNS(WNS, "w:r");
+            const t = p.ownerDocument.createElementNS(WNS, "w:t");
+            t.textContent = val;
+            r.appendChild(t);
+            p.appendChild(r);
+        }
+    }
+
+    // --- 工具函数：解锁行高 (仅针对段落，安全操作) ---
+    function unlock(p, doc) {
+        let pPr = p.getElementsByTagNameNS(WNS, "pPr")[0];
+        if(!pPr) {
+            pPr = doc.createElementNS(WNS, "w:pPr");
+            p.insertBefore(pPr, p.firstChild);
+        }
+        let sp = pPr.getElementsByTagNameNS(WNS, "spacing")[0];
+        if(!sp) {
+            sp = doc.createElementNS(WNS, "w:spacing");
+            pPr.appendChild(sp);
+        }
+        sp.setAttribute("w:line", "240");
+        sp.setAttribute("w:lineRule", "auto");
+    }
+
+    async function addRel(zip, path) {
+        let rXml = await zip.file("word/_rels/document.xml.rels").async("string");
+        const rDoc = new DOMParser().parseFromString(rXml, "application/xml");
+        const id = "rIdZ" + Math.floor(Math.random()*10000);
+        const rel = rDoc.createElement("Relationship");
+        rel.setAttribute("Id", id);
+        rel.setAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image");
+        rel.setAttribute("Target", path.replace("word/",""));
+        rDoc.documentElement.appendChild(rel);
+        zip.file("word/_rels/document.xml.rels", new XMLSerializer().serializeToString(rDoc));
+        return id;
+    }
+
+    function insertImg(doc, p, rid) {
+        const h = 360000;
+        const w = Math.round(h * (signWH.w / signWH.h || 1));
+        const xml = `<w:r xmlns:w="${WNS}">
+            <w:drawing>
+                <wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+                    <wp:extent cx="${w}" cy="${h}"/>
+                    <wp:docPr id="${Date.now()%1000}" name="img"/>
+                    <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                            <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                                <pic:nvPicPr><pic:cNvPr id="0" name="img"/><pic:cNvPicPr/></pic:nvPicPr>
+                                <pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${rid}"/></pic:blipFill>
+                                <pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>
+                            </pic:pic>
+                        </a:graphicData>
+                    </a:graphic>
+                </wp:inline>
+            </w:drawing>
+        </w:r>`;
+        const frag = new DOMParser().parseFromString(xml, "application/xml").documentElement;
+        p.appendChild(doc.importNode(frag, true));
+    }
+</script>
+</body>
+</html>
