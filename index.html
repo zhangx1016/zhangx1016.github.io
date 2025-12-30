@@ -112,6 +112,55 @@
         navGrid.appendChild(a);
     });
 </script>
+<div id="time-elapsed" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    font-size: 16px;
+    font-family: 'PingFang SC', sans-serif;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    z-index: 1000;
+    pointer-events: none;
+"></div>
 
+<script>
+    function updateElapsed() {
+        // 设置目标时间：2025年6月25日 15:30:00
+        const targetDate = new Date('2025-06-25T15:30:00');
+        const now = new Date();
+        
+        // 计算时间差（毫秒）
+        let diff = now - targetDate;
+        
+        // 如果当前时间早于目标时间，可以显示为0或负值处理
+        if (diff < 0) {
+            document.getElementById('time-elapsed').innerText = "尚未到达目标时间";
+            return;
+        }
+
+        // 计算天、小时、分钟、秒
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        diff -= days * (1000 * 60 * 60 * 24);
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        diff -= hours * (1000 * 60 * 60);
+
+        const minutes = Math.floor(diff / (1000 * 60));
+        diff -= minutes * (1000 * 60);
+
+        const seconds = Math.floor(diff / 1000);
+
+        // 格式化显示内容
+        const displayString = `${days}天${hours}小时${minutes}分${seconds}秒`;
+        document.getElementById('time-elapsed').innerText = displayString;
+    }
+
+    // 每秒更新一次
+    setInterval(updateElapsed, 1000);
+    // 页面加载后立即执行一次，避免1秒延迟
+    updateElapsed();
+</script>
 </body>
 </html>
+
