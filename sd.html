@@ -1,175 +1,181 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三度计算公式</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <style>
-        .gradient-button {
-            background-image: linear-gradient(135deg, #4f46e5 0%, #a855f7 100%);
-            color: white;
-        }
-        .gradient-button:hover {
-            background-image: linear-gradient(135deg, #3b32d6 0%, #8b45eb 100%);
-        }
-        .result-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        }
-        /* 新增输入区域样式 */
-        #inputArea {
-            background-color: #e0f2f1; /* 浅蓝色背景 */
-            width: 50%!important; /* 强制宽度50% */
-            min-height: 600px; /* 固定高度 */
-        }
-        #sidebar {
-            width: 50%!important; /* 强制宽度50% */
-            min-height: 600px; /* 固定高度 */
-        }
-    </style>
+<meta charset="UTF-8">
+<title>试卷三度分析系统</title>
+<style>
+body{
+    margin:0;
+    font-family:"Microsoft YaHei",Arial;
+    background:linear-gradient(120deg,#4facfe,#00f2fe);
+}
+.container{
+    max-width:1200px;
+    margin:60px auto;
+    background:#e9f9ff;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+.header{
+    text-align:center;
+    font-size:26px;
+    color:#333;
+    margin-bottom:30px;
+}
+.main{display:flex;gap:30px;}
+.left,.right{
+    background:#fff;
+    border-radius:14px;
+    padding:20px;
+    flex:1;
+}
+textarea,input{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    font-size:14px;
+}
+button{
+    margin-top:15px;
+    padding:10px 26px;
+    font-size:16px;
+    background:#409eff;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+button:hover{background:#337ecc;}
+.highlight{color:#e74c3c;font-weight:bold;}
+.desc-box{
+    margin-top:15px;
+    padding:15px;
+    background:#f7fbff;
+    border-radius:10px;
+    line-height:1.9;
+}
+</style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
-    <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row items-start justify-between py-8">
-            <div id="inputArea" class="md:w-2/3 bg-white p-6 rounded-lg shadow-md w-full">
-                <h1 class="text-3xl font-bold text-gray-900 mb-4">三度计算公式</h1>
-                <div class="mb-6">
-                    <p class="text-lg font-medium text-gray-700 mb-2">
-                        复制excel中全部学生成绩，粘贴在此区域（每行一个分数，支持换行分隔）：
-                    </p>
-                    <textarea 
-                        id="scoreInput" 
-                        class="w-full h-48 p-4 border border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 text-sm" 
-                        placeholder="复制Excel成绩数据后直接粘贴至此"
-                    ></textarea>
-                </div>
-            </div>
 
-            <div id="sidebar" class="md:w-1/3 md:mt-0 mt-8">
-                <div class="sticky top-8 bg-white p-6 rounded-lg shadow-md h-full">
-                    <button 
-                        id="calculateBtn" 
-                        class="w-full px-6 py-3 font-medium text-white rounded-lg gradient-button hover:shadow-lg transition-shadow"
-                    >
-                        生成分析结果 <i class="fas fa-chart-line ml-2"></i>
-                    </button>
+<body>
+<div class="container">
+    <div class="header">zhangx1016.github.io · 试卷三度分析</div>
 
-                    <div class="mt-8 h-full">
-                        <h3 class="text-lg font-medium text-gray-700 mb-4">分析结果</h3>
-                        <div id="difficulty" class="result-card p-5 mb-4">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-xl font-semibold text-gray-800">难度系数</p>
-                                    <p class="text-gray-600 mt-2" id="difficultyValue">-</p>
-                                </div>
-                                <div class="text-2xl text-indigo-500">◈</div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-3" id="difficultyDesc">请输入数据后点击计算</p>
-                        </div>
+    <div class="main">
+        <!-- 左侧输入 -->
+        <div class="left">
+            <h3>📥 成绩输入</h3>
+            <textarea id="scores" rows="10"
+            placeholder="按教务系统成绩顺序粘贴成绩
+（支持逗号 / 换行）"></textarea>
 
-                        <div id="discrimination" class="result-card p-5 mb-4">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-xl font-semibold text-gray-800">区分度系数</p>
-                                    <p class="text-gray-600 mt-2" id="discriminationValue">-</p>
-                                </div>
-                                <div class="text-2xl text-green-500">◈</div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-3" id="discriminationDesc">请输入数据后点击计算</p>
-                        </div>
+            <label>试卷总分 W：</label>
+            <input type="number" id="totalScore" value="100">
 
-                        <div id="reliability" class="result-card p-5">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-xl font-semibold text-gray-800">信度系数</p>
-                                    <p class="text-gray-600 mt-2" id="reliabilityValue">-</p>
-                                </div>
-                                <div class="text-2xl text-yellow-500">◈</div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-3" id="reliabilityDesc">请输入数据后点击计算</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button onclick="calculate()">开始计算</button>
+        </div>
+
+        <!-- 右侧输出 -->
+        <div class="right">
+            <h3>📊 计算结果</h3>
+            <div id="result"></div>
+
+            <h3>📝 自动分析描述</h3>
+            <div id="desc" class="desc-box"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        document.getElementById('calculateBtn').addEventListener('click', function() {
-            const scores = [];
-            const textInput = document.getElementById('scoreInput').value.trim();
-            
-            textInput.split('\n').forEach(line => {
-                const score = parseFloat(line.trim());
-                if (!isNaN(score)) scores.push(score);
-            });
+<script>
+function calculate() {
 
-            if (scores.length === 0) {
-                alert('请输入有效的成绩数据（每行一个分数，换行分隔）');
-                return;
-            }
+    /* ===== 成绩解析（与你正确版本完全一致） ===== */
+    let scores = document.getElementById("scores").value
+        .replace(/，/g,",")
+        .split(/[\s,]+/)
+        .map(s=>parseFloat(s))
+        .filter(s=>!isNaN(s));
 
-            processScores(scores);
-        });
+    if(scores.length<4){
+        alert("成绩数量过少，无法计算！");
+        return;
+    }
 
-        function processScores(scores) {
-            scores.sort((a, b) => b - a);
-            const n = scores.length;
-            const m = Math.ceil(n * 0.27);
-            const VH = calculateAverage(scores.slice(0, m));
-            const VL = calculateAverage(scores.slice(n - m, n));
-            const W = 100;
+    let W = parseFloat(document.getElementById("totalScore").value) || 100;
+    let n = scores.length;
+    const avg = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
 
-            const P = (VH + VL) / (2 * W);
-            const D = (VH - VL) / W;
-            const half = Math.floor(n / 2);
-            const group1 = scores.slice(0, half);
-            const group2 = scores.slice(half, n);
-            const var1 = calculateVariance(group1);
-            const var2 = calculateVariance(group2);
-            const Y = var1 / var2;
+    /* ===== 难度 & 区分度（27% 分组法）===== */
+    let sorted = [...scores].sort((a,b)=>b-a);
+    let m = Math.round(n*0.27);
 
-            document.getElementById('difficultyValue').textContent = P.toFixed(3);
-            document.getElementById('difficultyDesc').textContent = getDifficultyText(P);
-            
-            document.getElementById('discriminationValue').textContent = D.toFixed(3);
-            document.getElementById('discriminationDesc').textContent = getDiscriminationText(D);
-            
-            document.getElementById('reliabilityValue').textContent = `${(Y * 100).toFixed(1)}%`;
-            document.getElementById('reliabilityDesc').textContent = getReliabilityText(Y);
-        }
+    let high = sorted.slice(0,m);
+    let low  = sorted.slice(n-m);
 
-        function calculateAverage(arr) {
-            return arr.reduce((sum, val) => sum + val, 0) / arr.length;
-        }
+    let VH = avg(high);
+    let VL = avg(low);
 
-        function calculateVariance(arr) {
-            const avg = calculateAverage(arr);
-            return arr.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / arr.length;
-        }
+    let P = (VH + VL) / (2 * W);
+    let D = (VH - VL) / W;
 
-        function getDifficultyText(P) {
-            if (P >= 0.8) return '试卷难度为太易';
-            else if (P >= 0.6) return '试卷难度为较易';
-            else if (P >= 0.4) return '试卷难度为适中';
-            else if (P >= 0.2) return '试卷难度为较难';
-            else return '试卷难度为太难';
-        }
+    /* ===== 信度（完全采用你给的正确版本）===== */
+    let mid = Math.floor(n/2);
+    let group1 = scores.slice(0,mid);
+    let group2 = scores.slice(mid);
 
-        function getDiscriminationText(D) {
-            if (D >= 0.4) return '题目区分度很好（建议保留）';
-            else if (D >= 0.3) return '题目区分度较好（建议优化）';
-            else if (D >= 0.2) return '区分度一般，试卷需修改';
-            else return '区分度差，题目应淘汰';
-        }
+    function variance(arr){
+        let mean = avg(arr);
+        let sum = arr.reduce((t,x)=>t+(x-mean)**2,0);
+        return sum / arr.length;
+    }
 
-        function getReliabilityText(Y) {
-            if (Y < 0.6) return '信度低，试题存在严重问题（需重新设计）';
-            else if (Y < 0.8) return '信度中等，试题质量有待提升（建议调整）';
-            else return '信度高，试卷可信度强（可以使用）';
-        }
-    </script>
+    let S1 = variance(group1);
+    let S2 = variance(group2);
+    let R  = S1 / S2;
+
+    /* ===== 成绩区间比例 ===== */
+    let ranges=[
+        {name:"优秀",count:scores.filter(s=>s>=90).length},
+        {name:"良好",count:scores.filter(s=>s>=80&&s<90).length},
+        {name:"中等",count:scores.filter(s=>s>=70&&s<80).length},
+        {name:"及格",count:scores.filter(s=>s>=60&&s<70).length},
+        {name:"不及格",count:scores.filter(s=>s<60).length}
+    ];
+    ranges.forEach(r=>r.rate=r.count/n*100);
+
+    let mainRanges=[...ranges]
+        .sort((a,b)=>b.rate-a.rate)
+        .slice(0,2)
+        .map(r=>r.name)
+        .join("和");
+
+    /* ===== 描述词 ===== */
+    let Pd=P>=0.8?"太易":P>=0.6?"较易":P>=0.4?"适中":P>=0.2?"较难":"太难";
+    let Dd=D>=0.4?"区分度很好":D>0.3?"区分度较好":D>=0.2?"区分度一般":"区分度差";
+    let Rd=R<0.6?"试题存在严重问题，不宜采用":R<0.8?"试题质量有提升空间":"试卷可信度高";
+
+    /* ===== 输出 ===== */
+    document.getElementById("result").innerHTML=`
+        难度 P：<span class="highlight">${P.toFixed(2)}</span><br>
+        区分度 D：<span class="highlight">${D.toFixed(2)}</span><br>
+        信度 R：<span class="highlight">${R.toFixed(2)}</span><hr>
+        ${ranges.map(r=>`${r.name}率：${r.rate.toFixed(2)}%`).join("<br>")}
+    `;
+
+    document.getElementById("desc").innerHTML=`
+        试卷难度为 ${P.toFixed(2)}，表明试卷难度为${Pd}；
+        试卷区分度为 ${D.toFixed(2)}，${Dd}；
+        试卷信度为 ${R.toFixed(2)}，${Rd}。
+        从成绩分布情况看，其中优秀占 ${ranges[0].rate.toFixed(2)}%，
+        良好占 ${ranges[1].rate.toFixed(2)}%，
+        中等占 ${ranges[2].rate.toFixed(2)}%，
+        及格占 ${ranges[3].rate.toFixed(2)}%，
+        不及格占 ${ranges[4].rate.toFixed(2)}%，
+        成绩主要集中在${mainRanges}区间，
+        试卷能够较好地检验学生对所学知识的掌握情况。
+    `;
+}
+</script>
 </body>
 </html>
-    
