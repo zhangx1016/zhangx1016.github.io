@@ -47,6 +47,16 @@ button{
     cursor:pointer;
 }
 button:hover{background:#337ecc;}
+.copy-btn{
+    margin-left:12px;
+    padding:4px 10px;
+    font-size:13px;
+    background:#67c23a;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+}
 .highlight{color:#e74c3c;font-weight:bold;}
 .desc-box{
     margin-top:15px;
@@ -55,127 +65,161 @@ button:hover{background:#337ecc;}
     border-radius:10px;
     line-height:1.9;
 }
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+th,td{
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+}
+th{background:#f0f8ff;}
 </style>
 </head>
 
 <body>
 <div class="container">
-    <div class="header">zhangx1016.github.io · 试卷三度分析</div>
+<div class="header">zhangx1016.github.io · 试卷三度分析</div>
 
-    <div class="main">
-        <!-- 左侧输入 -->
-        <div class="left">
-            <h3>📥 成绩输入</h3>
-            <textarea id="scores" rows="10"
-            placeholder="按教务系统成绩顺序粘贴成绩
+<div class="main">
+<!-- 左侧输入 -->
+<div class="left">
+<h3>📥 成绩输入</h3>
+<textarea id="scores" rows="10"
+placeholder="按教务系统成绩顺序粘贴成绩
 （支持逗号 / 换行）"></textarea>
 
-            <label>试卷总分 W：</label>
-            <input type="number" id="totalScore" value="100">
+<label>试卷总分 W：</label>
+<input type="number" id="totalScore" value="100">
 
-            <button onclick="calculate()">开始计算</button>
-        </div>
+<button onclick="calculate()">开始计算</button>
+</div>
 
-        <!-- 右侧输出 -->
-        <div class="right">
-            <h3>📊 计算结果</h3>
-            <div id="result"></div>
+<!-- 右侧输出 -->
+<div class="right">
+<h3>📊 三度计算结果</h3>
+<div id="result"></div>
 
-            <h3>📝 自动分析描述</h3>
-            <div id="desc" class="desc-box"></div>
-        </div>
-    </div>
+<h3>📋 成绩分布统计表</h3>
+<div id="tableBox"></div>
+
+<h3>
+📝 自动分析描述
+<button class="copy-btn" onclick="copyDesc()">一键复制</button>
+</h3>
+<div id="desc" class="desc-box"></div>
+</div>
+</div>
 </div>
 
 <script>
-function calculate() {
+function calculate(){
 
-    /* ===== 成绩解析（与你正确版本完全一致） ===== */
-    let scores = document.getElementById("scores").value
-        .replace(/，/g,",")
-        .split(/[\s,]+/)
-        .map(s=>parseFloat(s))
-        .filter(s=>!isNaN(s));
+/* ===== 成绩解析 ===== */
+let scores=document.getElementById("scores").value
+.replace(/，/g,",")
+.split(/[\s,]+/)
+.map(s=>parseFloat(s))
+.filter(s=>!isNaN(s));
+if(scores.length<4){alert("成绩数量不足");return;}
 
-    if(scores.length<4){
-        alert("成绩数量过少，无法计算！");
-        return;
-    }
+let W=+document.getElementById("totalScore").value||100;
+let n=scores.length;
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
 
-    let W = parseFloat(document.getElementById("totalScore").value) || 100;
-    let n = scores.length;
-    const avg = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+/* ===== 难度 & 区分度（保持原算法） ===== */
+let sorted=[...scores].sort((a,b)=>b-a);
+let m=Math.round(n*0.27);
+let VH=avg(sorted.slice(0,m));
+let VL=avg(sorted.slice(n-m));
+let P=(VH+VL)/(2*W);
+let D=(VH-VL)/W;
 
-    /* ===== 难度 & 区分度（27% 分组法）===== */
-    let sorted = [...scores].sort((a,b)=>b-a);
-    let m = Math.round(n*0.27);
+/* ===== 信度（保持原算法） ===== */
+let mid=Math.floor(n/2);
+let g1=scores.slice(0,mid);
+let g2=scores.slice(mid);
+let variance=a=>{
+    let mean=avg(a);
+    return a.reduce((s,x)=>s+(x-mean)**2,0)/a.length;
+};
+let R=variance(g1)/variance(g2);
 
-    let high = sorted.slice(0,m);
-    let low  = sorted.slice(n-m);
+/* ===== 成绩分段 ===== */
+let ranges=[
+ {name:"优秀(≥90)",count:scores.filter(s=>s>=90).length,ratio:0.15},
+ {name:"良好(80–89)",count:scores.filter(s=>s>=80&&s<90).length,ratio:0.30},
+ {name:"中等(70–79)",count:scores.filter(s=>s>=70&&s<80).length,ratio:0.40},
+ {name:"及格(60–69)",count:scores.filter(s=>s>=60&&s<70).length,ratio:0.15},
+ {name:"不及格(<60)",count:scores.filter(s=>s<60).length,ratio:0.00}
+];
+ranges.forEach(r=>{
+    r.rate=r.count/n*100;
+    r.theory=(n*r.ratio).toFixed(1);
+});
 
-    let VH = avg(high);
-    let VL = avg(low);
+/* ===== 成绩分布表 ===== */
+document.getElementById("tableBox").innerHTML=`
+<table>
+<tr>
+<th>分数段</th>
+<th>实际人数</th>
+<th>理论人数</th>
+<th>占比</th>
+</tr>
+${ranges.map(r=>`
+<tr>
+<td>${r.name}</td>
+<td>${r.count}</td>
+<td>${r.theory}</td>
+<td>${r.rate.toFixed(2)}%</td>
+</tr>`).join("")}
+</table>`;
 
-    let P = (VH + VL) / (2 * W);
-    let D = (VH - VL) / W;
+/* ===== 描述词规则 ===== */
+let Pd=P>=0.8?"太易":P>=0.6?"较易":P>=0.4?"适中":P>=0.2?"较难":"太难";
+let Dd=D>=0.4?"区分度很好":D>=0.3?"区分度较好":D>=0.2?"区分度一般":"区分度较差";
+let Rd=R<0.6?"试题存在严重问题，不宜采用":R<0.8?"试题质量有提升空间":"试卷可信度高";
 
-    /* ===== 信度（完全采用你给的正确版本）===== */
-    let mid = Math.floor(n/2);
-    let group1 = scores.slice(0,mid);
-    let group2 = scores.slice(mid);
+/* ===== 百分比描述 ===== */
+let rateText=ranges.map(r=>
+    `${r.name.replace(/\\(.+?\\)/,"")}占${r.rate.toFixed(2)}%`
+).join("，");
 
-    function variance(arr){
-        let mean = avg(arr);
-        let sum = arr.reduce((t,x)=>t+(x-mean)**2,0);
-        return sum / arr.length;
-    }
+/* ===== 集中区间（1–2 个） ===== */
+let sortedRanges=[...ranges].sort((a,b)=>b.count-a.count);
+let main=[sortedRanges[0]];
+if(sortedRanges[1].count>=sortedRanges[0].count*0.6){
+    main.push(sortedRanges[1]);
+}
+let mainText=main.map(r=>r.name.replace(/\\(.+?\\)/,"")).join("和");
 
-    let S1 = variance(group1);
-    let S2 = variance(group2);
-    let R  = S1 / S2;
+/* ===== 输出 ===== */
+document.getElementById("result").innerHTML=`
+难度 P：<span class="highlight">${P.toFixed(2)}</span><br>
+区分度 D：<span class="highlight">${D.toFixed(2)}</span><br>
+信度 R：<span class="highlight">${R.toFixed(2)}</span>
+`;
 
-    /* ===== 成绩区间比例 ===== */
-    let ranges=[
-        {name:"优秀",count:scores.filter(s=>s>=90).length},
-        {name:"良好",count:scores.filter(s=>s>=80&&s<90).length},
-        {name:"中等",count:scores.filter(s=>s>=70&&s<80).length},
-        {name:"及格",count:scores.filter(s=>s>=60&&s<70).length},
-        {name:"不及格",count:scores.filter(s=>s<60).length}
-    ];
-    ranges.forEach(r=>r.rate=r.count/n*100);
+document.getElementById("desc").innerHTML=`
+试卷难度为 ${P.toFixed(2)}，表明试卷难度为${Pd}；
+试卷区分度为 ${D.toFixed(2)}，表明试卷中题目${Dd}；
+试卷信度为 ${R.toFixed(2)}，${Rd}。
+从成绩分布情况看，${rateText}，
+成绩主要集中在${mainText}区间。
+`;
+}
 
-    let mainRanges=[...ranges]
-        .sort((a,b)=>b.rate-a.rate)
-        .slice(0,2)
-        .map(r=>r.name)
-        .join("和");
-
-    /* ===== 描述词 ===== */
-    let Pd=P>=0.8?"太易":P>=0.6?"较易":P>=0.4?"适中":P>=0.2?"较难":"太难";
-    let Dd=D>=0.4?"区分度很好":D>0.3?"区分度较好":D>=0.2?"区分度一般":"区分度差";
-    let Rd=R<0.6?"试题存在严重问题，不宜采用":R<0.8?"试题质量有提升空间":"试卷可信度高";
-
-    /* ===== 输出 ===== */
-    document.getElementById("result").innerHTML=`
-        难度 P：<span class="highlight">${P.toFixed(2)}</span><br>
-        区分度 D：<span class="highlight">${D.toFixed(2)}</span><br>
-        信度 R：<span class="highlight">${R.toFixed(2)}</span><hr>
-        ${ranges.map(r=>`${r.name}率：${r.rate.toFixed(2)}%`).join("<br>")}
-    `;
-
-    document.getElementById("desc").innerHTML=`
-        试卷难度为 ${P.toFixed(2)}，表明试卷难度为${Pd}；
-        试卷区分度为 ${D.toFixed(2)}，${Dd}；
-        试卷信度为 ${R.toFixed(2)}，${Rd}。
-        从成绩分布情况看，其中优秀占 ${ranges[0].rate.toFixed(2)}%，
-        良好占 ${ranges[1].rate.toFixed(2)}%，
-        中等占 ${ranges[2].rate.toFixed(2)}%，
-        及格占 ${ranges[3].rate.toFixed(2)}%，
-        不及格占 ${ranges[4].rate.toFixed(2)}%，
-        成绩主要集中在${mainRanges}区间，
-        试卷能够较好地检验学生对所学知识的掌握情况。
-    `;
+/* ===== 一键复制纯文本 ===== */
+function copyDesc(){
+    let text=document.getElementById("desc").innerText;
+    navigator.clipboard.writeText(text).then(()=>{
+        alert("分析描述已复制，可直接粘贴使用");
+    });
 }
 </script>
 </body>
 </html>
+
