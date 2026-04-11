@@ -18,8 +18,8 @@
             --text-dark: #1a1a2e;
             --text-mid: #555;
             --text-light: #aaa;
-            --card-bg: rgba(255, 255, 255, 0.82);
-            --card-border: rgba(255, 255, 255, 0.35);
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(255, 255, 255, 0.4);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,7 +32,7 @@
             overflow-x: hidden;
         }
 
-        /* Animated background bubbles */
+        /* Background bubbles */
         .bg-bubbles {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -44,16 +44,16 @@
             position: absolute;
             border-radius: 50%;
             background: rgba(255,255,255,0.08);
-            animation: float linear infinite;
+            animation: floatBubble linear infinite;
         }
-        @keyframes float {
+        @keyframes floatBubble {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
 
-        /* Header nav */
+        /* Nav */
         .site-nav {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -62,9 +62,10 @@
             align-items: center;
             padding: 0 24px;
             height: 56px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,0.22);
         }
         .site-nav a {
             color: white;
@@ -77,60 +78,59 @@
         .site-nav .nav-arrow { margin: 0 8px; opacity: 0.5; }
         .site-nav .nav-title { color: white; font-size: 15px; font-weight: 500; opacity: 1; }
 
-        /* Container */
+        /* Main container */
         .main-container {
             position: relative;
             z-index: 1;
             max-width: 820px;
             margin: 0 auto;
-            padding: 80px 20px 40px;
+            padding: 76px 20px 48px;
         }
 
-        /* Page cards */
-        .page {
-            display: none;
-            animation: fadeInUp 0.5s ease both;
-        }
+        /* Page transitions */
+        .page { display: none; animation: pageIn 0.45s ease both; }
         .page.active { display: block; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(24px); }
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Card */
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 48px 40px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+            border-radius: 26px;
+            padding: 48px 44px;
+            box-shadow: 0 10px 48px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
 
-        /* ── Landing Page ── */
+        /* ── Landing ── */
         .landing-icon {
             width: 72px; height: 72px;
             background: linear-gradient(135deg, var(--ocean-o), var(--ocean-c));
-            border-radius: 20px;
+            border-radius: 22px;
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 28px;
             font-size: 32px;
-            box-shadow: 0 8px 24px rgba(108,99,255,0.3);
+            box-shadow: 0 8px 28px rgba(108,99,255,0.28);
         }
         .landing-title {
             font-family: 'Noto Serif SC', serif;
-            font-size: 2rem;
+            font-size: 2.1rem;
             font-weight: 700;
             color: var(--text-dark);
             line-height: 1.3;
             margin-bottom: 8px;
         }
         .landing-subtitle {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--text-mid);
             font-weight: 300;
             margin-bottom: 32px;
+            letter-spacing: 0.5px;
         }
         .ocean-pills {
             display: flex; flex-wrap: wrap; gap: 10px;
@@ -140,107 +140,111 @@
             display: flex; align-items: center; gap: 8px;
             padding: 8px 16px;
             border-radius: 50px;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 13px; font-weight: 500;
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
         }
         .ocean-pill.o { background: var(--ocean-o); }
         .ocean-pill.c { background: var(--ocean-c); }
-        .ocean-pill.e { background: var(--ocean-e); color: #333; }
+        .ocean-pill.e { background: var(--ocean-e); color: #444; }
         .ocean-pill.a { background: var(--ocean-a); }
         .ocean-pill.n { background: var(--ocean-n); }
 
-        .landing-info {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-            margin-bottom: 32px;
+        .landing-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            margin-bottom: 28px;
         }
         .info-chip {
             display: flex; align-items: center; gap: 10px;
             padding: 14px 16px;
-            background: rgba(79,172,254,0.08);
-            border-radius: 12px;
-            border: 1px solid rgba(79,172,254,0.15);
+            background: rgba(79,172,254,0.07);
+            border-radius: 14px;
+            border: 1px solid rgba(79,172,254,0.13);
         }
-        .info-chip .icon { font-size: 20px; }
-        .info-chip .label { font-size: 12px; color: var(--text-light); }
-        .info-chip .value { font-size: 15px; font-weight: 500; color: var(--text-dark); }
+        .info-chip .ci-icon { font-size: 20px; }
+        .info-chip .ci-label { font-size: 11px; color: var(--text-light); }
+        .info-chip .ci-value { font-size: 15px; font-weight: 500; color: var(--text-dark); }
 
         .landing-desc {
-            font-size: 14px; line-height: 1.8;
+            font-size: 14px; line-height: 1.85;
             color: var(--text-mid);
             margin-bottom: 32px;
-            padding: 20px;
+            padding: 18px 20px;
             background: rgba(108,99,255,0.05);
-            border-radius: 12px;
+            border-radius: 14px;
             border-left: 3px solid var(--ocean-o);
         }
 
+        .source-note {
+            font-size: 12px; color: var(--text-light);
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 10px;
+            line-height: 1.7;
+        }
+
         .btn-primary {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             width: 100%;
-            padding: 16px 32px;
+            padding: 17px 32px;
             background: linear-gradient(135deg, var(--ocean-o), var(--primary-1));
             color: white;
             border: none;
             border-radius: 16px;
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 16px; font-weight: 500;
             font-family: 'Noto Sans SC', sans-serif;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 6px 24px rgba(108,99,255,0.35);
-            letter-spacing: 1px;
+            box-shadow: 0 6px 26px rgba(108,99,255,0.32);
+            letter-spacing: 0.5px;
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 32px rgba(108,99,255,0.45);
+            box-shadow: 0 10px 34px rgba(108,99,255,0.44);
         }
-        .btn-primary:active { transform: translateY(0); }
 
         /* ── Test Page ── */
         .test-header {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 32px;
+            margin-bottom: 30px;
         }
         .test-title {
             font-family: 'Noto Serif SC', serif;
-            font-size: 1.35rem;
-            font-weight: 600;
+            font-size: 1.3rem; font-weight: 600;
         }
         .progress-wrap { display: flex; align-items: center; gap: 12px; }
         .progress-text { font-size: 13px; color: var(--text-light); white-space: nowrap; }
         .progress-bar {
-            width: 120px; height: 6px;
-            background: rgba(79,172,254,0.2);
-            border-radius: 3px;
-            overflow: hidden;
+            width: 120px; height: 5px;
+            background: rgba(79,172,254,0.18);
+            border-radius: 3px; overflow: hidden;
         }
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--ocean-o), var(--primary-1));
             border-radius: 3px;
-            transition: width 0.4s ease;
+            transition: width 0.35s ease;
         }
 
-        .question-block {
-            margin-bottom: 28px;
-        }
-        .q-meta {
-            display: flex; align-items: center; gap: 10px;
+        /* Question — NO dimension badge visible to user */
+        .question-block { margin-bottom: 28px; }
+        .q-number-row {
+            display: flex; align-items: center; gap: 8px;
             margin-bottom: 14px;
         }
-        .q-dim-badge {
+        .q-badge {
             font-size: 11px; font-weight: 500;
             padding: 3px 10px;
             border-radius: 20px;
             color: white;
+            opacity: 0; /* Hidden from user */
         }
-        .q-number { font-size: 12px; color: var(--text-light); }
+        .q-hint { font-size: 12px; color: var(--text-light); }
         .q-text {
-            font-size: 15px; line-height: 1.7;
+            font-size: 15px; line-height: 1.75;
             color: var(--text-dark);
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             font-weight: 400;
         }
         .scale-labels {
@@ -253,37 +257,41 @@
         }
         .option {
             display: flex; flex-direction: column; align-items: center;
-            padding: 10px 4px;
-            border: 2px solid rgba(0,0,0,0.08);
+            padding: 12px 4px;
+            border: 2px solid rgba(0,0,0,0.07);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
             background: white;
             user-select: none;
         }
-        .option:hover { border-color: var(--primary-1); background: rgba(79,172,254,0.05); }
-        .option.selected { border-color: var(--primary-1); background: rgba(79,172,254,0.12); }
+        .option:hover {
+            border-color: var(--primary-1);
+            background: rgba(79,172,254,0.04);
+            transform: translateY(-1px);
+        }
+        .option.selected {
+            border-color: var(--ocean-o);
+            background: rgba(108,99,255,0.1);
+        }
         .option .opt-num { font-size: 16px; font-weight: 600; color: var(--text-mid); }
         .option.selected .opt-num { color: var(--ocean-o); }
-        .option .opt-label { font-size: 10px; color: var(--text-light); margin-top: 2px; text-align: center; }
+        .option .opt-label { font-size: 10px; color: var(--text-light); margin-top: 3px; text-align: center; }
 
-        .nav-buttons {
-            display: flex; gap: 12px;
-            margin-top: 32px;
-        }
+        /* Navigation buttons */
+        .nav-buttons { display: flex; gap: 12px; margin-top: 32px; }
         .btn-back {
             flex: 0 0 auto;
             padding: 14px 24px;
-            background: rgba(0,0,0,0.06);
+            background: rgba(0,0,0,0.05);
             color: var(--text-mid);
             border: none;
             border-radius: 12px;
-            font-size: 14px;
-            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 14px; font-family: 'Noto Sans SC', sans-serif;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-        .btn-back:hover { background: rgba(0,0,0,0.1); }
+        .btn-back:hover { background: rgba(0,0,0,0.09); }
         .btn-next {
             flex: 1;
             padding: 14px 24px;
@@ -291,21 +299,20 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 14px; font-weight: 500;
             font-family: 'Noto Sans SC', sans-serif;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(108,99,255,0.3);
+            box-shadow: 0 4px 16px rgba(108,99,255,0.28);
         }
-        .btn-next:hover { box-shadow: 0 6px 20px rgba(108,99,255,0.4); transform: translateY(-1px); }
-        .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-next:hover { box-shadow: 0 6px 22px rgba(108,99,255,0.4); transform: translateY(-1px); }
+        .btn-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* ── Loading Page ── */
-        .loading-wrap { text-align: center; padding: 40px 0; }
-        .loading-ring {
-            width: 80px; height: 80px;
-            border: 4px solid rgba(79,172,254,0.2);
+        /* ── Loading ── */
+        .loading-wrap { text-align: center; padding: 48px 0; }
+        .spinner {
+            width: 76px; height: 76px;
+            border: 4px solid rgba(79,172,254,0.15);
             border-top-color: var(--primary-1);
             border-radius: 50%;
             margin: 0 auto 24px;
@@ -313,158 +320,136 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text { font-size: 15px; color: var(--text-mid); }
-        .loading-dots::after { content: ''; animation: dots 1.5s steps(4) infinite; }
-        @keyframes dots { 0%{content:'.'} 25%{content:'..'} 50%{content:'...'} 75%{content:''} }
+        .loading-text small { display: block; font-size: 12px; color: var(--text-light); margin-top: 8px; }
 
-        /* ── Report Page ── */
+        /* ── Report ── */
         .report-header { text-align: center; margin-bottom: 36px; }
         .report-badge {
             display: inline-block;
-            padding: 6px 16px;
+            padding: 6px 18px;
             background: linear-gradient(135deg, var(--ocean-o), var(--primary-1));
             color: white;
             border-radius: 50px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 16px;
-            letter-spacing: 1px;
+            font-size: 11px; font-weight: 500;
+            margin-bottom: 14px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
-        .report-title { font-family: 'Noto Serif SC', serif; font-size: 1.8rem; font-weight: 700; }
+        .report-title { font-family: 'Noto Serif SC', serif; font-size: 1.85rem; font-weight: 700; }
         .report-time { font-size: 13px; color: var(--text-light); margin-top: 8px; }
 
-        .radar-section { text-align: center; margin-bottom: 32px; }
-        .radar-canvas-wrap { display: inline-block; position: relative; }
+        .radar-section { text-align: center; margin-bottom: 30px; }
         #radarCanvas { max-width: 100%; }
 
-        /* Dimension cards */
-        .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        /* Dimension cards grid */
+        .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
         .dim-card {
             background: white;
             border-radius: 16px;
             padding: 20px;
-            border: 1px solid rgba(0,0,0,0.06);
-            transition: all 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .dim-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
         .dim-card::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0;
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
             height: 3px;
-            border-radius: 3px 3px 0 0;
         }
         .dim-card.o::before { background: var(--ocean-o); }
         .dim-card.c::before { background: var(--ocean-c); }
         .dim-card.e::before { background: var(--ocean-e); }
         .dim-card.a::before { background: var(--ocean-a); }
         .dim-card.n::before { background: var(--ocean-n); }
-
-        .dim-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-        .dim-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-        .dim-name-en { font-size: 11px; color: var(--text-light); margin-bottom: 10px; }
-        .dim-score-bar { height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
-        .dim-score-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
-        .dim-score-fill.o { background: var(--ocean-o); }
-        .dim-score-fill.c { background: var(--ocean-c); }
-        .dim-score-fill.e { background: var(--ocean-e); }
-        .dim-score-fill.a { background: var(--ocean-a); }
-        .dim-score-fill.n { background: var(--ocean-n); }
-        .dim-score-num { font-size: 20px; font-weight: 700; }
-        .dim-level { font-size: 12px; padding: 2px 10px; border-radius: 20px; color: white; display: inline-block; margin-bottom: 6px; }
+        .dim-level {
+            font-size: 11px; padding: 2px 10px; border-radius: 20px;
+            color: white; display: inline-block; margin-bottom: 6px;
+        }
         .dim-level.o { background: var(--ocean-o); }
         .dim-level.c { background: var(--ocean-c); }
-        .dim-level.e { background: var(--ocean-e); color: #333; }
+        .dim-level.e { background: var(--ocean-e); color: #444; }
         .dim-level.a { background: var(--ocean-a); }
         .dim-level.n { background: var(--ocean-n); }
-        .dim-brief { font-size: 12px; color: var(--text-mid); line-height: 1.6; margin-top: 6px; }
+        .dim-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .dim-name-en { font-size: 11px; color: var(--text-light); margin-bottom: 10px; }
+        .dim-bar { height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+        .dim-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s ease; }
+        .dim-bar-fill.o { background: var(--ocean-o); }
+        .dim-bar-fill.c { background: var(--ocean-c); }
+        .dim-bar-fill.e { background: var(--ocean-e); }
+        .dim-bar-fill.a { background: var(--ocean-a); }
+        .dim-bar-fill.n { background: var(--ocean-n); }
+        .dim-score { font-size: 22px; font-weight: 700; }
+        .dim-score-unit { font-size: 12px; font-weight: 400; color: var(--text-light); }
+        .dim-brief { font-size: 12px; color: var(--text-mid); line-height: 1.65; margin-top: 6px; }
 
-        /* Detailed analysis */
+        /* Analysis cards */
         .analysis-card {
             background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px; padding: 24px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(0,0,0,0.05);
         }
         .analysis-title {
             font-family: 'Noto Serif SC', serif;
-            font-size: 1.1rem; font-weight: 600;
+            font-size: 1.05rem; font-weight: 600;
             margin-bottom: 12px;
             display: flex; align-items: center; gap: 8px;
         }
-        .analysis-text { font-size: 14px; line-height: 1.9; color: var(--text-mid); }
+        .analysis-text { font-size: 14px; line-height: 1.95; color: var(--text-mid); }
         .analysis-text strong { color: var(--text-dark); }
 
-        /* Report actions */
-        .report-actions {
-            display: flex; gap: 12px;
-            margin-top: 24px;
+        /* Level matrix */
+        .matrix-card {
+            background: white; border-radius: 16px; padding: 22px;
+            margin-bottom: 14px; border: 1px solid rgba(0,0,0,0.05);
         }
+        .matrix-title { font-size: 1rem; font-weight: 600; margin-bottom: 14px; }
+        .matrix-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+        .matrix-item { padding: 8px 2px; border-radius: 8px; font-size: 11px; color: white; font-weight: 500; line-height: 1.5; }
+        .matrix-item.high { background: var(--ocean-o); }
+        .matrix-item.mid { background: rgba(108,99,255,0.38); }
+        .matrix-item.low { background: rgba(0,0,0,0.18); color: var(--text-mid) !important; }
+
+        /* Report actions */
+        .report-actions { display: flex; gap: 12px; margin-top: 22px; }
         .btn-report {
-            flex: 1;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-family: 'Noto Sans SC', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px; border-radius: 12px;
+            font-size: 14px; font-family: 'Noto Sans SC', sans-serif;
+            cursor: pointer; transition: all 0.2s; border: none;
         }
         .btn-pdf {
             background: linear-gradient(135deg, var(--ocean-n), #c0392b);
             color: white;
-            box-shadow: 0 4px 14px rgba(235,77,75,0.3);
+            box-shadow: 0 4px 14px rgba(235,77,75,0.28);
         }
         .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(235,77,75,0.4); }
         .btn-restart {
-            background: rgba(0,0,0,0.06);
+            background: rgba(0,0,0,0.05);
             color: var(--text-mid);
-            border: 1px solid rgba(0,0,0,0.08) !important;
+            border: 1px solid rgba(0,0,0,0.07) !important;
         }
-        .btn-restart:hover { background: rgba(0,0,0,0.1); }
+        .btn-restart:hover { background: rgba(0,0,0,0.09); }
 
-        /* Trait interpretation matrix */
-        .matrix-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(0,0,0,0.06);
+        .disclaimer {
+            font-size: 11px; color: #ccc;
+            text-align: center; margin-top: 14px;
+            line-height: 1.7;
         }
-        .matrix-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
-        .matrix-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr);
-            gap: 6px; text-align: center;
-        }
-        .matrix-item {
-            padding: 8px 4px;
-            border-radius: 8px;
-            font-size: 11px;
-            color: white;
-            font-weight: 500;
-        }
-        .matrix-item.high { background: var(--ocean-o); }
-        .matrix-item.mid { background: rgba(108,99,255,0.4); }
-        .matrix-item.low { background: rgba(0,0,0,0.2); color: var(--text-mid) !important; }
 
         /* ── Responsive ── */
         @media (max-width: 600px) {
-            .card { padding: 28px 20px; border-radius: 18px; }
-            .landing-title { font-size: 1.6rem; }
-            .landing-info { grid-template-columns: 1fr; }
-            .options { grid-template-columns: repeat(5, 1fr); gap: 6px; }
-            .option { padding: 8px 2px; }
-            .option .opt-num { font-size: 14px; }
+            .card { padding: 26px 20px; border-radius: 20px; }
+            .landing-title { font-size: 1.65rem; }
+            .landing-grid { grid-template-columns: 1fr; }
+            .options { grid-template-columns: repeat(5, 1fr); gap: 5px; }
             .option .opt-label { display: none; }
+            .option .opt-num { font-size: 15px; }
             .dim-grid { grid-template-columns: 1fr; }
-            .matrix-grid { grid-template-columns: repeat(5, 1fr); }
             .report-actions { flex-direction: column; }
-        }
-
-        @media (max-width: 400px) {
-            .ocean-pills { gap: 6px; }
-            .ocean-pill { font-size: 11px; padding: 6px 10px; }
+            .matrix-grid { grid-template-columns: repeat(5, 1fr); }
         }
     </style>
 </head>
@@ -473,171 +458,155 @@
 <div class="bg-bubbles" id="bgBubbles"></div>
 
 <!-- Navigation -->
-<nav class="site-nav">
+<nav class="site-nav" id="siteNav">
     <a href="https://zhangx1016.github.io/">首页</a>
     <span class="nav-arrow">›</span>
     <a href="javascript:void(0)">大五人格测试</a>
 </nav>
 
-<div class="main-container">
+<div class="main-container" id="mainContainer">
 
-    <!-- Page 1: Landing -->
+    <!-- ══ Page 1: Landing ══ -->
     <div class="page active" id="page-landing">
         <div class="card">
             <div class="landing-icon">🧠</div>
             <h1 class="landing-title">大五人格测试</h1>
-            <p class="landing-subtitle">Big Five Personality Test · 基于 NEO-PI-R 理论</p>
+            <p class="landing-subtitle">Big Five Personality Inventory · 基于 IPIP 验证量表</p>
 
             <div class="ocean-pills">
-                <div class="ocean-pill o">🔵 O 开放性</div>
-                <div class="ocean-pill c">🟢 C 责任心</div>
-                <div class="ocean-pill e">🟡 E 外向性</div>
-                <div class="ocean-pill a">🟠 A 宜人性</div>
-                <div class="ocean-pill n">🔴 N 神经质</div>
+                <div class="ocean-pill o">🔵 O · 开放性</div>
+                <div class="ocean-pill c">🟢 C · 责任心</div>
+                <div class="ocean-pill e">🟡 E · 外向性</div>
+                <div class="ocean-pill a">🟠 A · 宜人性</div>
+                <div class="ocean-pill n">🔴 N · 神经质</div>
             </div>
 
-            <div class="landing-info">
+            <div class="landing-grid">
                 <div class="info-chip">
-                    <span class="icon">📋</span>
-                    <div>
-                        <div class="label">题目数量</div>
-                        <div class="value">50 题</div>
-                    </div>
+                    <span class="ci-icon">📋</span>
+                    <div><div class="ci-label">题目数量</div><div class="ci-value">50 题</div></div>
                 </div>
                 <div class="info-chip">
-                    <span class="icon">⏱️</span>
-                    <div>
-                        <div class="label">预计用时</div>
-                        <div class="value">约 5-8 分钟</div>
-                    </div>
+                    <span class="ci-icon">⏱️</span>
+                    <div><div class="ci-label">预计用时</div><div class="ci-value">约 5–8 分钟</div></div>
                 </div>
                 <div class="info-chip">
-                    <span class="icon">📊</span>
-                    <div>
-                        <div class="label">分析维度</div>
-                        <div class="value">5 大维度</div>
-                    </div>
+                    <span class="ci-icon">📊</span>
+                    <div><div class="ci-label">分析维度</div><div class="ci-value">5 大维度</div></div>
                 </div>
                 <div class="info-chip">
-                    <span class="icon">🔬</span>
-                    <div>
-                        <div class="label">理论基础</div>
-                        <div class="value">NEO-PI-R / IPIP</div>
-                    </div>
+                    <span class="ci-icon">🔬</span>
+                    <div><div class="ci-label">量表来源</div><div class="ci-value">IPIP BFFM</div></div>
                 </div>
             </div>
 
             <div class="landing-desc">
-                大五人格理论（Big Five）是目前心理学界公认最全面、最稳定的人格模型，已被广泛应用于职业规划、人才测评与心理健康评估。本测试基于 Costa & McCrae 的 NEO-PI-R 量表改编，融合 IPIP 自由量表题项，科学性与实用性兼具。
+                大五人格理论（Big Five / OCEAN）是目前心理学界最具影响力的公认人格模型，已在上百个跨文化研究中得到验证。本测试题目改编自 <strong>IPIP Big Five Factor Markers</strong>（International Personality Item Pool, Goldberg 1992/1999），这是全球使用最广泛的免费验证量表之一，信效度经大量实证研究确认。每次测试题目顺序随机，测试结束后生成完整的人格画像报告。
             </div>
 
-            <button class="btn-primary" id="btn-start">
-                开始测试 →
-            </button>
+            <div class="source-note">
+                📚 <strong>量表说明</strong>：IPIP（国际人格题库）由 Lewis Goldberg 创建，其大五因子量表题目来源于 NEO-PI-R（Costa & McCrae, 1987, 1992），经因子分析筛选验证。本测试题项参考 IPIP-BFFM 原始条目进行中文语境改编，保留了每个维度的高载荷核心题项。
+            </div>
+
+            <button class="btn-primary" id="btnStart">开始测试 →</button>
         </div>
     </div>
 
-    <!-- Page 2: Test -->
+    <!-- ══ Page 2: Test ══ -->
     <div class="page" id="page-test">
         <div class="card">
             <div class="test-header">
                 <div class="test-title">人格测评问卷</div>
                 <div class="progress-wrap">
-                    <span class="progress-text" id="progress-text">1/50</span>
+                    <span class="progress-text" id="progressText">1/50</span>
                     <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width:2%"></div>
+                        <div class="progress-fill" id="progressFill" style="width:2%"></div>
                     </div>
                 </div>
             </div>
-
-            <div id="question-container"></div>
-
+            <div id="questionContainer"></div>
             <div class="nav-buttons">
-                <button class="btn-back" id="btn-prev" style="visibility:hidden">← 上一题</button>
-                <button class="btn-next" id="btn-next" disabled>下一题 →</button>
+                <button class="btn-back" id="btnPrev" style="visibility:hidden">← 上一题</button>
+                <button class="btn-next" id="btnNext" disabled>下一题 →</button>
             </div>
         </div>
     </div>
 
-    <!-- Page 3: Loading -->
+    <!-- ══ Page 3: Loading ══ -->
     <div class="page" id="page-loading">
         <div class="card">
             <div class="loading-wrap">
-                <div class="loading-ring"></div>
+                <div class="spinner"></div>
                 <div class="loading-text">
-                    正在分析您的回答<span class="loading-dots"></span><br>
-                    <span style="font-size:12px;color:#aaa;margin-top:8px;display:inline-block">基于大五人格理论进行多维度计算</span>
+                    正在计算你的大五人格维度<span id="loadingDots"></span>
+                    <small>基于 IPIP 验证量表标准算法</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Page 4: Report -->
+    <!-- ══ Page 4: Report ══ -->
     <div class="page" id="page-report">
         <div class="card">
             <div class="report-header">
                 <div class="report-badge">人格报告</div>
                 <h2 class="report-title">你的 OCEAN 人格画像</h2>
-                <div class="report-time" id="report-time"></div>
+                <div class="report-time" id="reportTime"></div>
             </div>
-
             <div class="radar-section">
-                <div class="radar-canvas-wrap">
-                    <canvas id="radarCanvas" width="360" height="360"></canvas>
-                </div>
+                <canvas id="radarCanvas" width="360" height="360"></canvas>
             </div>
-
-            <div class="dim-grid" id="dim-grid"></div>
+            <div class="dim-grid" id="dimGrid"></div>
         </div>
 
         <div class="card">
             <div class="analysis-card">
                 <div class="analysis-title">🎯 综合人格解读</div>
-                <div class="analysis-text" id="analysis-overall"></div>
+                <div class="analysis-text" id="analysisOverall"></div>
             </div>
             <div class="analysis-card">
-                <div class="analysis-title">💡 性格优势分析</div>
-                <div class="analysis-text" id="analysis-strengths"></div>
+                <div class="analysis-title">💡 性格优势</div>
+                <div class="analysis-text" id="analysisStrengths"></div>
             </div>
             <div class="analysis-card">
-                <div class="analysis-title">⚠️ 潜在成长方向</div>
-                <div class="analysis-text" id="analysis-growth"></div>
+                <div class="analysis-title">🌱 成长建议</div>
+                <div class="analysis-text" id="analysisGrowth"></div>
             </div>
             <div class="matrix-card">
-                <div class="matrix-title">📋 维度等级一览</div>
-                <div class="matrix-grid" id="matrix-grid"></div>
+                <div class="matrix-title">📋 五维度等级一览</div>
+                <div class="matrix-grid" id="matrixGrid"></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="analysis-card" style="background:#f8f9fa;margin:-4px;">
+            <div class="analysis-card" style="background:#f9faff;margin:-4px;border:none;">
                 <div class="analysis-title">🏠 人际关系模式</div>
-                <div class="analysis-text" id="analysis-relation"></div>
+                <div class="analysis-text" id="analysisRelation"></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="analysis-card" style="background:#f8f9fa;margin:-4px;">
+            <div class="analysis-card" style="background:#f9faff;margin:-4px;border:none;">
                 <div class="analysis-title">💼 职业倾向参考</div>
-                <div class="analysis-text" id="analysis-career"></div>
+                <div class="analysis-text" id="analysisCareer"></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="analysis-card" style="background:#f8f9fa;margin:-4px;">
-                <div class="analysis-title">🧘 心理状态与自我调节</div>
-                <div class="analysis-text" id="analysis-mental"></div>
+            <div class="analysis-card" style="background:#f9faff;margin:-4px;border:none;">
+                <div class="analysis-title">🧘 情绪与心理状态</div>
+                <div class="analysis-text" id="analysisMental"></div>
             </div>
         </div>
 
         <div class="card">
             <div class="report-actions">
-                <button class="btn-report btn-pdf" id="btn-pdf">📄 保存为 PDF</button>
-                <button class="btn-report btn-restart" id="btn-restart">🔄 重新测试</button>
+                <button class="btn-report btn-pdf" id="btnPdf">📄 保存为 PDF</button>
+                <button class="btn-report btn-restart" id="btnRestart">🔄 重新测试</button>
             </div>
-            <div style="font-size:11px;color:#bbb;text-align:center;margin-top:14px;line-height:1.6">
-                本测试结果仅供参考，不作为医学诊断或重大人生决策依据<br>
-                人格特质受环境、经历影响而发展变化，请理性看待
+            <div class="disclaimer">
+                本测试结果仅供参考，不作为医学诊断或重大人生决策依据。<br>
+                人格特质受环境、经历影响而持续变化，请理性看待。
             </div>
         </div>
     </div>
@@ -646,163 +615,185 @@
 
 <script>
 // ════════════════════════════════════════════════════════════
-// 50 QUESTIONS based on IPIP Big Five markers (adapted)
-// Format: { dim: 'O'|'C'|'E'|'A'|'N', text: '...', reverse: bool }
+// 50 IPIP-BFFM Items (Goldberg, 1992/1999)
+// 每维度10题，部分条目为反向计分（reverse:true）
+// 中文条目改编自 IPIP 原始英文条目，保留核心语义
+// IPIP 为公共领域（public domain），可自由使用
 // ════════════════════════════════════════════════════════════
-const QUESTIONS = [
-    // O — Openness
-    { dim:'O', text:'我是一个充满想象力、思维活跃的人', reverse:false },
-    { dim:'O', text:'我喜欢接触和了解艺术、文化领域的新事物', reverse:false },
-    { dim:'O', text:'我倾向于对抽象概念和理论感兴趣', reverse:false },
-    { dim:'O', text:'我好奇心强，喜欢探索未知领域', reverse:false },
-    { dim:'O', text:'我喜欢独立思考，不轻易接受既定答案', reverse:false },
-    { dim:'O', text:'我对诗词、文学、艺术有较深的感受力', reverse:false },
-    { dim:'O', text:'我偏好有变化和新鲜感的生活，不喜欢一成不变', reverse:false },
-    { dim:'O', text:'我善于从多个角度思考问题', reverse:false },
-    { dim:'O', text:'我对哲学、宗教或价值观问题有探索兴趣', reverse:false },
-    { dim:'O', text:'我重视审美体验和美感追求', reverse:false },
-    // C — Conscientiousness
-    { dim:'C', text:'我做事有计划、有条理，不会轻易半途而废', reverse:false },
-    { dim:'C', text:'我守时守约，承诺的事情一定会做到', reverse:false },
-    { dim:'C', text:'我对自己有较高的要求和标准', reverse:false },
-    { dim:'C', text:'我能够抵制诱惑，坚持完成既定目标', reverse:false },
-    { dim:'C', text:'我喜欢把东西整理得井井有条', reverse:false },
-    { dim:'C', text:'我会提前规划时间，很少临时抱佛脚', reverse:false },
-    { dim:'C', text:'我做事认真细致，追求高质量的结果', reverse:false },
-    { dim:'C', text:'我自律性强，能够独立完成任务', reverse:false },
-    { dim:'C', text:'我重视承诺和责任感，不轻易食言', reverse:false },
-    { dim:'C', text:'我会系统性地安排学习和工作计划', reverse:false },
-    // E — Extraversion
-    { dim:'E', text:'我在社交场合中感到轻松自在', reverse:false },
-    { dim:'E', text:'我性格开朗，喜欢与人交流', reverse:false },
-    { dim:'E', text:'我经常感到充满活力，精力充沛', reverse:false },
-    { dim:'E', text:'我善于在人群中主动发起对话', reverse:false },
-    { dim:'E', text:'我喜欢成为他人关注的中心', reverse:false },
-    { dim:'E', text:'我有很多朋友，喜欢参加社交活动', reverse:false },
-    { dim:'E', text:'我做事果断，敢于表达自己的意见', reverse:false },
-    { dim:'E', text:'我享受冒险和刺激感', reverse:false },
-    { dim:'E', text:'我在压力下反而更加兴奋和有干劲', reverse:false },
-    { dim:'E', text:'我说话语速较快，表达能力强', reverse:false },
-    // A — Agreeableness
-    { dim:'A', text:'我乐于助人，愿意主动帮助有困难的人', reverse:false },
-    { dim:'A', text:'我相信大多数人是善意的，愿意信任他人', reverse:false },
-    { dim:'A', text:'我善于与人合作，不喜欢与人发生冲突', reverse:false },
-    { dim:'A', text:'我待人谦逊，不自以为是', reverse:false },
-    { dim:'A', text:'我富有同情心，能设身处地理解他人感受', reverse:false },
-    { dim:'A', text:'我愿意为集体利益做出牺牲', reverse:false },
-    { dim:'A', text:'我为人坦荡，不喜欢藏着掖着', reverse:false },
-    { dim:'A', text:'我善于化解矛盾，维护人际和谐', reverse:false },
-    { dim:'A', text:'我不太争强好胜，更愿意退让和包容', reverse:false },
-    { dim:'A', text:'我愿意倾听他人意见，不太固执己见', reverse:false },
-    // N — Neuroticism
-    { dim:'N', text:'我容易感到焦虑和担心', reverse:false },
-    { dim:'N', text:'我的情绪波动较大，容易起伏', reverse:false },
-    { dim:'N', text:'我容易因小事而感到沮丧或失落', reverse:false },
-    { dim:'N', text:'我容易对某些事情产生强烈的愤怒或敌意', reverse:false },
-    { dim:'N', text:'在压力下，我容易感到脆弱和无助', reverse:false },
-    { dim:'N', text:'我容易自我怀疑，容易感到尴尬', reverse:false },
-    { dim:'N', text:'我难以控制冲动，偶尔会做出后悔的决定', reverse:false },
-    { dim:'N', text:'我经常担心最坏的情况会发生', reverse:false },
-    { dim:'N', text:'我容易失眠或因担忧而难以入睡', reverse:false },
-    { dim:'N', text:'我情绪低落时很难振作起来', reverse:false },
+const RAW_QUESTIONS = [
+    // ── O · 开放性 Openness ──
+    { dim:'O', text:'我有丰富的想象力',                reverse:false },
+    { dim:'O', text:'我善于抽象思维',                   reverse:false },
+    { dim:'O', text:'我对艺术和美有浓厚的兴趣',          reverse:false },
+    { dim:'O', text:'我喜欢尝试新奇的体验',              reverse:false },
+    { dim:'O', text:'我愿意听各种不同的观点',            reverse:false },
+    { dim:'O', text:'我擅长理解复杂抽象的概念',          reverse:false },
+    { dim:'O', text:'我对诗歌、文学或艺术有强烈的感受力',  reverse:false },
+    { dim:'O', text:'我好奇心强，喜欢探索未知领域',       reverse:false },
+    { dim:'O', text:'我思维灵活，善于接受不同的做事方式',   reverse:false },
+    { dim:'O', text:'我对哲学和精神层面的问题有兴趣',     reverse:false },
+
+    // ── C · 责任心 Conscientiousness ──
+    { dim:'C', text:'我总是把事情安排得井井有条',          reverse:false },
+    { dim:'C', text:'我注意细节，做事认真细致',           reverse:false },
+    { dim:'C', text:'我言出必行，承诺的事情一定会做到',     reverse:false },
+    { dim:'C', text:'我能够自律，坚持完成自己的目标',       reverse:false },
+    { dim:'C', text:'我做事有计划，不会临时抱佛脚',        reverse:false },
+    { dim:'C', text:'我是一个做事有条理、效率高的人',      reverse:false },
+    { dim:'C', text:'我善于规划时间，总能按时完成任务',     reverse:false },
+    { dim:'C', text:'我对工作/学习有强烈的责任感',        reverse:false },
+    { dim:'C', text:'我追求卓越，对自己有高标准要求',      reverse:false },
+    { dim:'C', text:'我会坚持不懈直到任务完成',           reverse:false },
+
+    // ── E · 外向性 Extraversion ──
+    { dim:'E', text:'我是一个外向、善于社交的人',          reverse:false },
+    { dim:'E', text:'我在社交场合中感到轻松自在',          reverse:false },
+    { dim:'E', text:'我精力充沛，总是充满活力',            reverse:false },
+    { dim:'E', text:'我说话多，喜欢主动与人交谈',          reverse:false },
+    { dim:'E', text:'我性格开朗，容易和人熟络起来',         reverse:false },
+    { dim:'E', text:'我喜欢成为众人关注的中心',            reverse:false },
+    { dim:'E', text:'我做事果断，敢于表达自己的意见',       reverse:false },
+    { dim:'E', text:'我有很多朋友，社交圈子广泛',          reverse:false },
+    { dim:'E', text:'我享受热闹和刺激的感觉',             reverse:false },
+    { dim:'E', text:'我乐观积极，总能看到事情好的一面',     reverse:false },
+
+    // ── A · 宜人性 Agreeableness ──
+    { dim:'A', text:'我信任他人，愿意相信大多数人是善意的',  reverse:false },
+    { dim:'A', text:'我善于与人合作，乐于配合团队',         reverse:false },
+    { dim:'A', text:'我富有同情心，能设身处地理解他人',      reverse:false },
+    { dim:'A', text:'我为人坦荡直率，不喜欢绕弯子',         reverse:false },
+    { dim:'A', text:'我乐于助人，愿意主动帮助他人',         reverse:false },
+    { dim:'A', text:'我待人谦逊，不自以为是',              reverse:false },
+    { dim:'A', text:'我善于化解人际矛盾，维护和谐关系',      reverse:false },
+    { dim:'A', text:'我很少和别人发生争执',                reverse:true  },
+    { dim:'A', text:'我愿意为他人做出一定的让步',           reverse:false },
+    { dim:'A', text:'我善于倾听，愿意采纳别人的合理建议',     reverse:false },
+
+    // ── N · 神经质 Neuroticism (高分=情绪不稳定/敏感) ──
+    // IPIP N 反向计分题→ 即心理稳定/抗压，高分→低N(稳定)，反向→高分N(不稳定)
+    { dim:'N', text:'我容易感到沮丧和情绪低落',             reverse:false },
+    { dim:'N', text:'我容易感到焦虑和担忧',                reverse:false },
+    { dim:'N', text:'我的情绪起伏较大，容易波动',           reverse:false },
+    { dim:'N', text:'我经常因为小事而心烦意乱',            reverse:false },
+    { dim:'N', text:'我容易对自己产生怀疑',                reverse:false },
+    { dim:'N', text:'我容易对他人产生敌意或愤怒',           reverse:false },
+    { dim:'N', text:'面对压力时，我容易感到脆弱和无助',      reverse:false },
+    { dim:'N', text:'我经常担心最坏的情况会发生',           reverse:false },
+    { dim:'N', text:'我情绪低落时很难振作起来',             reverse:false },
+    { dim:'N', text:'我容易感到孤独或被孤立',               reverse:false },
 ];
 
-// Dimension metadata
-const DIMS = {
-    O: { name:'开放性', nameEn:'Openness', color:'#6c63ff', cls:'o',
-         desc:'对经验持开放态度，好奇心与创造力的源泉',
-         brief:'你是一个思维开放、富有创造力的人，喜欢探索新观念，对艺术和文化有较高的欣赏力。你倾向于独立思考，不墨守成规。' },
-    C: { name:'责任心', nameEn:'Conscientiousness', color:'#ff6584', cls:'c',
-         desc:'目标导向行为的组织与坚持能力',
-         brief:'你是一个高度自律、有强烈责任感的人。你做事有计划、有条理，承诺的事情一定会兑现，是值得信赖的伙伴。' },
-    E: { name:'外向性', nameEn:'Extraversion', color:'#f9ca24', cls:'e',
-         desc:'对外部世界的积极投入程度',
-         brief:'你是一个充满活力、善于社交的人。你热情开朗，乐于与人交流，在人际场合中表现得自信而果断。' },
-    A: { name:'宜人性', nameEn:'Agreeableness', color:'#6ab04c', cls:'a',
-         desc:'合作倾向与利他程度',
-         brief:'你是一个善良、富有同情心的人。你信任他人，乐于助人，善于维护人际和谐，是很好的朋友和合作伙伴。' },
-    N: { name:'神经质', nameEn:'Neuroticism', color:'#eb4d4b', cls:'n',
-         desc:'情绪稳定程度（得分低代表更稳定）',
-         brief:'你在情绪稳定性方面的得分反映了你的心理韧性。情绪稳定的人通常更从容地面对压力和挫折。' },
-};
+// ── Fisher-Yates shuffle ──
+function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
 
+// Shuffle at init — each session gets a different order
+const QUESTIONS = shuffle(RAW_QUESTIONS);
+
+// ── Dimension metadata ──
+const DIMS = {
+    O: {
+        name:'开放性', nameEn:'Openness', color:'#6c63ff', cls:'o',
+        brief:'思维活跃、创造力强、善于接受新事物，对艺术、文化和抽象概念有较高的欣赏力和探索兴趣。',
+        careers:['创意设计师','产品经理','科研人员','艺术家','作家','战略咨询师'],
+    },
+    C: {
+        name:'责任心', nameEn:'Conscientiousness', color:'#ff6584', cls:'c',
+        brief:'自律性强、做事有计划、言出必行，是高度可靠的人。无论是对自己还是对他人，都能保持高度的承诺和责任感。',
+        careers:['财务审计','项目经理','律师','医生','HR经理','企业高管'],
+    },
+    E: {
+        name:'外向性', nameEn:'Extraversion', color:'#f9ca24', cls:'e',
+        brief:'社交活力充沛、热情开朗、自信大方。你在人际场合中感到自在，善于主动发起交流并享受社交带来的能量。',
+        careers:['销售经理','公关专员','培训师','主持人','外联经理','市场总监'],
+    },
+    A: {
+        name:'宜人性', nameEn:'Agreeableness', color:'#6ab04c', cls:'a',
+        brief:'善良温和、富有同理心、善于合作。你重视人际和谐，愿意信任他人并主动帮助，是很好的倾听者和沟通者。',
+        careers:['心理咨询师','护士','社工','教师','客服经理','HRBP'],
+    },
+    N: {
+        name:'神经质', nameEn:'Neuroticism', color:'#eb4d4b', cls:'n',
+        brief:'对压力和负面情绪的敏感程度。得分高表示情绪波动大、容易焦虑；得分低表示情绪稳定、抗压能力强。',
+        careers:[],
+    },
+};
 const DIM_ORDER = ['O','C','E','A','N'];
 
-// App state
-let currentQ = 0;
-let answers = new Array(QUESTIONS.length).fill(null);
-let scores = {};
+// ── App state ──
+let currentQ  = 0;
+let answers   = new Array(QUESTIONS.length).fill(null);
+let scores    = {};
+let dotTimer  = null;
 
-// ── Bubble background ──
+// ── Bubbles ──
 (function initBubbles(){
-    const container = document.getElementById('bgBubbles');
-    for(let i=0; i<12; i++){
+    const c = document.getElementById('bgBubbles');
+    for (let i = 0; i < 14; i++) {
         const b = document.createElement('div');
         b.className = 'bubble';
-        const size = 40 + Math.random()*120;
-        b.style.cssText = `
-            width:${size}px;height:${size}px;
-            left:${Math.random()*100}%;
-            animation-duration:${12+Math.random()*20}s;
-            animation-delay:${Math.random()*15}s;
-        `;
-        container.appendChild(b);
+        const size = 35 + Math.random() * 110;
+        Object.assign(b.style, {
+            width: size + 'px', height: size + 'px',
+            left: (Math.random() * 100) + '%',
+            animationDuration: (12 + Math.random() * 20) + 's',
+            animationDelay: (Math.random() * 15) + 's',
+        });
+        c.appendChild(b);
     }
 })();
 
-// ── Navigation ──
+// ── Loading dots animation ──
+function startDots(){
+    const el = document.getElementById('loadingDots');
+    let n = 0;
+    dotTimer = setInterval(()=>{
+        n = (n + 1) % 4;
+        el.textContent = '.'.repeat(n);
+    }, 400);
+}
+function stopDots(){ if(dotTimer){ clearInterval(dotTimer); dotTimer=null; }}
+
+// ── Page navigation ──
 function showPage(id){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-'+id).classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
 }
 
-document.getElementById('btn-start').onclick = ()=> showPage('test');
-
-document.getElementById('btn-prev').onclick = ()=>{
-    if(currentQ>0){ currentQ--; renderQuestion(); }
-};
-document.getElementById('btn-next').onclick = ()=>{
-    if(currentQ < QUESTIONS.length-1){
-        currentQ++;
-        renderQuestion();
-    } else {
-        submitTest();
-    }
-};
-
+// ── Question rendering ──
 function renderQuestion(){
     const q = QUESTIONS[currentQ];
     const total = QUESTIONS.length;
-    const pct = ((currentQ+1)/total*100).toFixed(1);
+    const pct = ((currentQ + 1) / total * 100).toFixed(1);
 
-    document.getElementById('progress-text').textContent = `${currentQ+1}/${total}`;
-    document.getElementById('progress-fill').style.width = pct+'%';
+    document.getElementById('progressText').textContent = `${currentQ + 1}/${total}`;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('btnPrev').style.visibility = currentQ > 0 ? 'visible' : 'hidden';
 
-    const btnPrev = document.getElementById('btn-prev');
-    btnPrev.style.visibility = currentQ>0 ? 'visible' : 'hidden';
+    const btnNext = document.getElementById('btnNext');
+    btnNext.disabled = answers[currentQ] === null;
+    btnNext.textContent = currentQ === total - 1 ? '提交测试 ✓' : '下一题 →';
 
-    const btnNext = document.getElementById('btn-next');
-    if(currentQ === total-1){
-        btnNext.textContent = '提交测试 ✓';
-    } else {
-        btnNext.textContent = '下一题 →';
-    }
-
-    const dimMeta = DIMS[q.dim];
-    const container = document.getElementById('question-container');
+    const container = document.getElementById('questionContainer');
     container.innerHTML = `
         <div class="question-block">
-            <div class="q-meta">
-                <span class="q-dim-badge" style="background:${dimMeta.color}">${dimMeta.name}</span>
-                <span class="q-number">请选择最符合你的程度</span>
+            <div class="q-number-row">
+                <span class="q-badge" style="background:${DIMS[q.dim].color}">${DIMS[q.dim].name}</span>
+                <span class="q-hint">请选择最符合你实际情况的程度</span>
             </div>
-            <div class="q-text">${currentQ+1}. ${q.text}</div>
+            <div class="q-text">${currentQ + 1}. ${q.text}</div>
             <div class="scale-labels">
                 <span>完全不符合</span><span>基本不符合</span><span>不确定</span><span>基本符合</span><span>完全符合</span>
             </div>
-            <div class="options" id="options">
-                ${[1,2,3,4,5].map(v=>`
-                    <div class="option${answers[currentQ]===v?' selected':''}" data-val="${v}" onclick="selectOpt(${v})">
+            <div class="options" id="optionsGrid">
+                ${[1,2,3,4,5].map(v => `
+                    <div class="option${answers[currentQ] === v ? ' selected' : ''}" data-val="${v}" onclick="selectOpt(${v})">
                         <div class="opt-num">${v}</div>
                         <div class="opt-label">${['','不符','偏不符','','偏符','符合'][v]}</div>
                     </div>
@@ -811,339 +802,399 @@ function renderQuestion(){
         </div>
     `;
 
-    // Restore answer selection
-    if(answers[currentQ]!==null){
-        document.querySelectorAll('.option').forEach(o=>{
-            if(parseInt(o.dataset.val)===answers[currentQ]) o.classList.add('selected');
+    // Restore prior answer
+    if (answers[currentQ] !== null) {
+        document.querySelectorAll('.option').forEach(o => {
+            if (parseInt(o.dataset.val) === answers[currentQ]) o.classList.add('selected');
         });
     }
-
-    btnNext.disabled = answers[currentQ]===null;
-    btnNext.textContent = currentQ===total-1 ? '提交测试 ✓' : '下一题 →';
 }
 
 function selectOpt(val){
     answers[currentQ] = val;
-    document.querySelectorAll('.option').forEach(o=>{
-        o.classList.toggle('selected', parseInt(o.dataset.val)===val);
+    document.querySelectorAll('.option').forEach(o => {
+        o.classList.toggle('selected', parseInt(o.dataset.val) === val);
     });
-    document.getElementById('btn-next').disabled = false;
+    document.getElementById('btnNext').disabled = false;
 }
 
-// ── Submit & Calculate ──
-function submitTest(){
-    if(answers.includes(null)) return;
+// ── Navigation handlers ──
+document.getElementById('btnStart').onclick = () => showPage('test');
 
-    // Calculate scores
-    const raw = {O:[],C:[],E:[],A:[],N:[]};
-    QUESTIONS.forEach((q,i)=>{
+document.getElementById('btnPrev').onclick = () => {
+    if (currentQ > 0) { currentQ--; renderQuestion(); }
+};
+
+document.getElementById('btnNext').onclick = () => {
+    if (currentQ < QUESTIONS.length - 1) {
+        currentQ++;
+        renderQuestion();
+    } else {
+        submitTest();
+    }
+};
+
+// ── Score calculation ──
+function submitTest(){
+    if (answers.includes(null)) return;
+    showPage('loading');
+    startDots();
+
+    // Accumulate raw scores per dimension
+    const raw = { O:[], C:[], E:[], A:[], N:[] };
+    QUESTIONS.forEach((q, i) => {
         let val = answers[i];
-        if(q.reverse) val = 6 - val;
+        if (q.reverse) val = 6 - val;   // reverse scoring
         raw[q.dim].push(val);
     });
 
+    // Convert average → 0-100 scale
     scores = {};
-    DIM_ORDER.forEach(d=>{
-        const arr = raw[d];
-        const avg = arr.reduce((a,b)=>a+b,0)/arr.length;
-        // Convert to 0-100 scale
+    DIM_ORDER.forEach(d => {
+        const avg = raw[d].reduce((a, b) => a + b, 0) / raw[d].length;
         scores[d] = Math.round(((avg - 1) / 4) * 100);
     });
 
-    showPage('loading');
-    setTimeout(()=>{
+    // Show report after brief loading delay
+    setTimeout(() => {
+        stopDots();
         showPage('report');
         renderReport();
-    }, 1800);
+    }, 1600);
 }
 
-// ── Render Report ──
+// ── Report ──
 function renderReport(){
-    const now = new Date();
-    document.getElementById('report-time').textContent = now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}) + ' 生成';
+    document.getElementById('reportTime').textContent =
+        new Date().toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric'}) + ' 生成';
 
-    // Draw radar chart
     drawRadar();
-
-    // Dimension cards
-    const dimGrid = document.getElementById('dim-grid');
-    dimGrid.innerHTML = DIM_ORDER.map(d=>{
-        const meta = DIMS[d];
-        const score = scores[d];
-        const level = getLevel(score);
-        const levelText = {1:'极低',2:'较低',3:'中等',4:'较高',5:'极高'}[level];
-        return `
-            <div class="dim-card ${meta.cls}">
-                <div class="dim-level ${meta.cls}">${levelText}</div>
-                <div class="dim-name">${meta.name}</div>
-                <div class="dim-name-en">${meta.nameEn}</div>
-                <div class="dim-score-bar"><div class="dim-score-fill ${meta.cls}" style="width:${score}%"></div></div>
-                <div class="dim-score-num" style="color:${meta.color}">${score}<span style="font-size:13px;font-weight:400;color:#aaa">分</span></div>
-                <div class="dim-brief">${meta.brief}</div>
-            </div>
-        `;
-    }).join('');
-
-    // Level matrix
-    const matrixGrid = document.getElementById('matrix-grid');
-    matrixGrid.innerHTML = DIM_ORDER.map(d=>{
-        const level = getLevel(scores[d]);
-        const cls = level>=4?'high':level===3?'mid':'low';
-        const label = {1:'极低',2:'较低',3:'中等',4:'较高',5:'极高'}[level];
-        return `<div class="matrix-item ${cls}">${DIMS[d].name}<br><b>${label}</b></div>`;
-    }).join('');
-
-    // Analysis texts
-    document.getElementById('analysis-overall').innerHTML = generateOverall();
-    document.getElementById('analysis-strengths').innerHTML = generateStrengths();
-    document.getElementById('analysis-growth').innerHTML = generateGrowth();
-    document.getElementById('analysis-relation').innerHTML = generateRelation();
-    document.getElementById('analysis-career').innerHTML = generateCareer();
-    document.getElementById('analysis-mental').innerHTML = generateMental();
+    renderDimCards();
+    renderMatrix();
+    renderAnalyses();
 }
 
 function getLevel(pct){
-    if(pct>=81) return 5;
-    if(pct>=61) return 4;
-    if(pct>=41) return 3;
-    if(pct>=21) return 2;
+    if (pct >= 81) return 5;
+    if (pct >= 61) return 4;
+    if (pct >= 41) return 3;
+    if (pct >= 21) return 2;
     return 1;
 }
 
-function getLevelText(level, dim){
-    const t = {
-        O:['保守传统','相对务实','中等开放','比较开放','极为开放'],
-        C:['比较随性','相对随性','中等负责','比较负责','非常负责'],
-        E:['极为内向','比较内向','中等外向','比较外向','非常外向'],
-        A:['竞争心强','相对独立','中等宜人','比较友善','非常友善'],
-        N:['非常稳定','比较稳定','中等情绪','波动较大','情绪不稳'],
-    };
-    return t[dim][level-1];
-}
+const LEVEL_TEXT = {
+    O: ['极为保守', '比较保守', '中等开放', '比较开放', '极为开放'],
+    C: ['非常随性', '比较随性', '中等负责', '比较负责', '非常负责'],
+    E: ['极为内向', '比较内向', '中等外向', '比较外向', '非常外向'],
+    A: ['竞争心强', '相对独立', '中等友善', '比较友善', '非常友善'],
+    N: ['非常稳定', '比较稳定', '中等敏感', '比较敏感', '非常敏感'],
+};
 
-// ── Radar Chart ──
+const LEVEL_TAG = {
+    1:'极低', 2:'较低', 3:'中等', 4:'较高', 5:'极高'
+};
+
+// ── Radar chart ──
 function drawRadar(){
     const canvas = document.getElementById('radarCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx    = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
-    const cx = W/2, cy = H/2;
-    const R = Math.min(W,H)*0.35;
-    const labels = DIM_ORDER.map(d=>DIMS[d].name);
-    const colors = DIM_ORDER.map(d=>DIMS[d].color);
-    const vals = DIM_ORDER.map(d=>scores[d]/100);
-
-    ctx.clearRect(0,0,W,H);
-
+    const cx = W / 2, cy = H / 2;
+    const R  = Math.min(W, H) * 0.34;
+    const labels = DIM_ORDER.map(d => DIMS[d].name);
+    const colors  = DIM_ORDER.map(d => DIMS[d].color);
+    const vals    = DIM_ORDER.map(d => scores[d] / 100);
     const N = DIM_ORDER.length;
-    const angleStep = (Math.PI*2)/N;
-    const startAngle = -Math.PI/2;
+    const step    = (Math.PI * 2) / N;
+    const start   = -Math.PI / 2;
 
-    // Background rings
-    [1,0.75,0.5,0.25].forEach(ratio=>{
+    ctx.clearRect(0, 0, W, H);
+
+    // Rings + axes
+    [1, 0.75, 0.5, 0.25].forEach(r => {
         ctx.beginPath();
-        for(let i=0;i<=N;i++){
-            const a = startAngle + i*angleStep;
-            const x = cx + Math.cos(a)*R*ratio;
-            const y = cy + Math.sin(a)*R*ratio;
-            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        for (let i = 0; i <= N; i++) {
+            const a = start + i * step;
+            const x = cx + Math.cos(a) * R * r;
+            const y = cy + Math.sin(a) * R * r;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
         ctx.closePath();
         ctx.strokeStyle = 'rgba(0,0,0,0.07)';
         ctx.lineWidth = 1;
         ctx.stroke();
     });
-
-    // Axis lines
-    for(let i=0;i<N;i++){
-        const a = startAngle + i*angleStep;
+    for (let i = 0; i < N; i++) {
+        const a = start + i * step;
         ctx.beginPath();
-        ctx.moveTo(cx,cy);
-        ctx.lineTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R);
-        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.strokeStyle = 'rgba(0,0,0,0.07)';
         ctx.lineWidth = 1;
         ctx.stroke();
     }
 
     // Data polygon
     ctx.beginPath();
-    for(let i=0;i<N;i++){
-        const a = startAngle + i*angleStep;
-        const r = R*(vals[i]||0.01);
-        const x = cx + Math.cos(a)*r;
-        const y = cy + Math.sin(a)*r;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    for (let i = 0; i < N; i++) {
+        const a = start + i * step;
+        const r = R * (vals[i] || 0.01);
+        const x = cx + Math.cos(a) * r;
+        const y = cy + Math.sin(a) * r;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(108,99,255,0.18)';
+    ctx.fillStyle   = 'rgba(108,99,255,0.16)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(108,99,255,0.7)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(108,99,255,0.65)';
+    ctx.lineWidth   = 2.5;
     ctx.stroke();
 
     // Data dots
-    for(let i=0;i<N;i++){
-        const a = startAngle + i*angleStep;
-        const r = R*(vals[i]||0.01);
+    for (let i = 0; i < N; i++) {
+        const a = start + i * step;
+        const r = R * (vals[i] || 0.01);
         ctx.beginPath();
-        ctx.arc(cx+Math.cos(a)*r, cy+Math.sin(a)*r, 5, 0, Math.PI*2);
-        ctx.fillStyle = colors[i];
+        ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle   = colors[i];
         ctx.fill();
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
+        ctx.lineWidth   = 2;
         ctx.stroke();
     }
 
     // Labels
-    ctx.font = 'bold 13px "Noto Sans SC", sans-serif';
-    ctx.textAlign = 'center';
+    ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    for(let i=0;i<N;i++){
-        const a = startAngle + i*angleStep;
-        const lx = cx + Math.cos(a)*(R+28);
-        const ly = cy + Math.sin(a)*(R+28);
+    for (let i = 0; i < N; i++) {
+        const a  = start + i * step;
+        const lx = cx + Math.cos(a) * (R + 30);
+        const ly = cy + Math.sin(a) * (R + 30);
+        ctx.font      = 'bold 13px "Noto Sans SC", sans-serif';
         ctx.fillStyle = colors[i];
         ctx.fillText(labels[i], lx, ly);
+        ctx.font      = '11px "Noto Sans SC"';
         ctx.fillStyle = '#aaa';
-        ctx.font = '11px "Noto Sans SC"';
-        ctx.fillText(scores[DIM_ORDER[i]]+'分', lx, ly+16);
+        ctx.fillText(scores[DIM_ORDER[i]] + '分', lx, ly + 17);
     }
 }
 
-// ── Analysis Generators ──
-function generateOverall(){
-    const top = DIM_ORDER.slice().sort((a,b)=>scores[b]-scores[a])[0];
-    const bottom = DIM_ORDER.slice().sort((a,b)=>scores[a]-scores[b])[0];
-    const topName = DIMS[top].name, bottomName = DIMS[bottom].name;
-    const topLvl = getLevelText(getLevel(scores[top]), top);
-    const botLvl = getLevelText(getLevel(scores[bottom]), bottom);
+// ── Dimension cards ──
+function renderDimCards(){
+    const grid = document.getElementById('dimGrid');
+    grid.innerHTML = DIM_ORDER.map(d => {
+        const m    = DIMS[d];
+        const pct  = scores[d];
+        const lv   = getLevel(pct);
+        const lvText = LEVEL_TAG[lv];
+        return `
+            <div class="dim-card ${m.cls}">
+                <div class="dim-level ${m.cls}">${lvText}</div>
+                <div class="dim-name">${m.name}</div>
+                <div class="dim-name-en">${m.nameEn}</div>
+                <div class="dim-bar">
+                    <div class="dim-bar-fill ${m.cls}" style="width:${pct}%"></div>
+                </div>
+                <div class="dim-score" style="color:${m.color}">${pct}<span class="dim-score-unit"> 分</span></div>
+                <div class="dim-brief">${m.brief}</div>
+            </div>
+        `;
+    }).join('');
+}
 
+// ── Level matrix ──
+function renderMatrix(){
+    const g = document.getElementById('matrixGrid');
+    g.innerHTML = DIM_ORDER.map(d => {
+        const lv  = getLevel(scores[d]);
+        const cls = lv >= 4 ? 'high' : lv === 3 ? 'mid' : 'low';
+        return `<div class="matrix-item ${cls}">${DIMS[d].name}<br><b>${LEVEL_TAG[lv]}</b></div>`;
+    }).join('');
+}
+
+// ── Analysis generators ──
+function renderAnalyses(){
+    document.getElementById('analysisOverall').innerHTML  = genOverall();
+    document.getElementById('analysisStrengths').innerHTML = genStrengths();
+    document.getElementById('analysisGrowth').innerHTML   = genGrowth();
+    document.getElementById('analysisRelation').innerHTML = genRelation();
+    document.getElementById('analysisCareer').innerHTML   = genCareer();
+    document.getElementById('analysisMental').innerHTML  = genMental();
+}
+
+function genOverall(){
+    const sorted = DIM_ORDER.slice().sort((a,b) => scores[b] - scores[a]);
+    const top    = sorted[0];
+    const bottom = sorted[sorted.length - 1];
+    const lvTop  = getLevel(scores[top]);
+    const lvBot  = getLevel(scores[bottom]);
     return `
-        你的大五人格综合画像显示，你最突出的特质是<strong>${topName}（${topLvl}）</strong>，
-        而在<strong>${bottomName}</strong>维度上则表现为<strong>${botLvl}</strong>。
-        这意味着你在日常行为中倾向于展现${DIMS[top].brief.substring(2,8)}的特质，
-        同时在${bottomName}方面则表现出${DIMS[bottom].brief.substring(2,8)}的特点。<br><br>
-        值得注意的是，<strong>大五人格的五个维度没有好坏之分</strong>，每种特质组合都有其独特价值。
-        高开放性不等于"更好"，低外向性也不等于"更差"。你的组合恰恰反映了你在特定情境下最真实的行为倾向。
-        理解自己的人格结构，可以帮助你更好地扬长避短，在职业发展、人际交往和自我成长中找到最适合你的方向。
+        根据你的作答模式，你的大五人格综合画像呈现为：<strong>${LEVEL_TEXT[top][lvTop-1]}${DIMS[top].name}</strong>最为突出，
+        而<strong>${LEVEL_TEXT[bottom][lvBot-1]}${DIMS[bottom].name}</strong>则是你相对不那么显著的特点。
+        这意味着在日常行为中，你更自然地展现出${DIMS[top].brief.substring(0,12)}的特点。<br><br>
+        五个维度之间没有优劣之分：<strong>高开放性不等于更聪明</strong>，<strong>低外向性也不等于内向有缺陷</strong>。
+        每种特质组合都有其独特的优势和适用场景。了解自己的 OCEAN 画像，可以帮助你做出更契合自身特点的职业选择、
+        人际互动风格和自我成长规划。
     `;
 }
 
-function generateStrengths(){
-    const high = DIM_ORDER.filter(d=>getLevel(scores[d])>=4);
-    if(high.length===0) return '你在各维度的得分相对均衡，没有极端高分项。这意味着你的人格特质较为平衡，没有明显的特别优势或短板，具备良好的适应性。';
-    return high.map(d=>{
-        const t = {
-            O:`<strong>开放性${scores[d]}分</strong>：你的创造力和好奇心是你的核心优势。你善于接受新事物，思维灵活，这在需要创新和独立思考的领域是非常宝贵的能力。`,
-            C:`<strong>责任心${scores[d]}分</strong>：你的自律和可靠性是你最突出的优势。你做事有始有终、高度负责，是团队中最值得信赖的人。无论学习还是工作，你的高标准都会推动你不断精进。`,
-            E:`<strong>外向性${scores[d]}分</strong>：你的社交活力是你的天然优势。你热情开朗，善于与人建立联系，这让你在人际网络中拥有天然的便利性，也更容易获得他人的支持和信任。`,
-            A:`<strong>宜人性${scores[d]}分</strong>：你的合作精神和同理心是你的突出优势。你善于理解他人、化解矛盾、维护关系，这让你成为出色的沟通者和协调者，在团队中扮演重要的"粘合剂"角色。`,
-            N:`<strong>神经质较低（情绪稳定）${scores[d]}分</strong>：你的情绪稳定性是你最宝贵的心理资源。面对压力和挫折，你能保持冷静和理性，这种心理韧性是长期成功的重要保障。`,
+function genStrengths(){
+    const high = DIM_ORDER.filter(d => getLevel(scores[d]) >= 4 && d !== 'N');
+    if (high.length === 0) {
+        return '你在各维度的得分相对均衡，没有极端高分项。这意味着你的人格特质较为平衡，具备良好的情境适应性，可以灵活应对不同场合的需求。';
+    }
+    return high.map(d => {
+        const texts = {
+            O:`<strong>${DIMS[d].name}（${scores[d]}分）</strong>：你的创造力和好奇心是你的核心优势。你善于接受新事物、思维灵活，这让你在需要创新和独立思考的领域具有天然优势。`,
+            C:`<strong>${DIMS[d].name}（${scores[d]}分）</strong>：你的自律和可靠性是你最突出的优势。你做事有始有终、高度负责，是团队中最值得信赖的人，你的高标准会推动你持续精进。`,
+            E:`<strong>${DIMS[d].name}（${scores[d]}分）</strong>：你的社交活力是你的天然优势。你热情开朗、善于建立联系，这让你在人际网络中具有天然的便利性，更容易获得他人的信任和支持。`,
+            A:`<strong>${DIMS[d].name}（${scores[d]}分）</strong>：你的合作精神和同理心是你的突出优势。你善于理解他人、化解矛盾、维护关系，是出色的沟通者和协调者，在团队中扮演着重要的"粘合剂"角色。`,
         };
-        return t[d];
+        return texts[d];
     }).join('<br><br>');
 }
 
-function generateGrowth(){
-    const low = DIM_ORDER.filter(d=>getLevel(scores[d])<=2);
-    if(low.length===0) return '你的人格特质整体发展均衡，各维度得分均在中等以上。若希望进一步提升，可以尝试挑战舒适区外的任务，促进性格的全面成长。';
-    return low.map(d=>{
-        const t = {
-            O:'<strong>开放性成长建议</strong>：可以尝试接触一些平时不感兴趣的艺术形式或学术领域，每周读一本不在舒适区的书，训练自己对多元价值观的包容力。',
-            C:'<strong>责任心成长建议</strong>：可以主动给自己设定更具体的目标，并记录完成情况。尝试用"两分钟法则"处理拖延事项——两分钟内能做完的事，立即执行。',
-            E:'<strong>外向性成长建议</strong>：不需要强迫自己变成"社交达人"，但可以每周主动发起一次有意义的对话，或参加一个兴趣社群，逐渐扩大自己的社交舒适区。',
-            A:'<strong>宜人性成长建议</strong>：在保持善良本色的同时，学会适当表达自己的需求和边界。高宜人性不等于无条件顺从，健康的关系需要双向的付出和尊重。',
-            N:'<strong>情绪管理成长建议</strong>：可以尝试正念冥想或呼吸练习，提升对情绪的觉察力。当焦虑来袭时，写情绪日记可以帮助你识别触发模式，从而更主动地管理反应。',
+function genGrowth(){
+    const low = DIM_ORDER.filter(d => getLevel(scores[d]) <= 2 && d !== 'N');
+    if (low.length === 0) {
+        return '你的人格特质整体发展均衡，各维度得分均在中等以上。如需进一步提升，可以有意识地挑战舒适区以外的任务，促进性格的全面成长。';
+    }
+    return low.map(d => {
+        const texts = {
+            O:'<strong>开放性成长建议</strong>：可以每周有意识地接触一个不在舒适区内的艺术形式、学术领域或文化活动，训练自己对多元价值观的包容力。',
+            C:'<strong>责任心成长建议</strong>：尝试用"两分钟法则"——两分钟内能完成的事立即执行，不拖延。同时为长期目标设置阶段性里程碑并记录进展。',
+            E:'<strong>外向性成长建议</strong>：不需要强迫自己变成"社交达人"，每周主动发起一次有深度的对话，或加入一个兴趣社群，逐步扩大社交舒适区。',
+            A:'<strong>宜人性成长建议</strong>：保持善良本色的同时，学会适当表达自己的需求和边界。健康的人际关系需要双向付出和尊重，而非无条件顺从。',
         };
-        return t[d];
+        return texts[d];
     }).join('<br><br>');
 }
 
-function generateRelation(){
+function genRelation(){
     const e = scores.E, a = scores.A, n = scores.N;
-    let text = '';
-    if(e>=60) text += '你在社交中<strong>积极主动</strong>，喜欢结识新朋友，在人际网络中通常扮演"连接者"的角色。你适合拥有多元化的社交圈，也擅长在陌生场合破冰。';
-    else if(e<=40) text += '你在社交中<strong>偏好深度而非广度</strong>，更喜欢与少数知心朋友保持深度交流。虽然朋友数量可能不多，但关系质量通常很高。';
-    else text += '你在社交方面表现<strong>均衡</strong>，既能融入集体，也享受独处时光。你在社交中有良好的分寸感。';
+    let t = '';
+    if (e >= 60)      t += '你在社交中<strong>积极主动</strong>，喜欢结识新朋友，在人际网络中常扮演"连接者"的角色。你擅长在陌生场合破冰，适合拥有多元化的社交圈。';
+    else if (e <= 40) t += '你在社交中<strong>偏好深度而非广度</strong>，更享受与少数知心朋友的深度交流。虽然朋友数量可能不多，但关系质量通常很高。';
+    else              t += '你在社交方面<strong>表现均衡</strong>，既能融入集体，也享受独处时光，在社交中有良好的分寸感。';
 
-    if(a>=60) text += '<br><br>你的<strong>高宜人性</strong>让你在人际中表现出很强的包容力和同理心。你善于倾听、愿意支持他人，这让你很容易收获信任和友谊。';
-    else if(a<=40) text += '<br><br>你的<strong>独立自主</strong>在人际中表现明显。你不随波逐流，有自己清晰的立场和判断，这在需要独立决策的情境中很有优势。';
+    if (a >= 60)      t += '<br><br>你的<strong>高宜人性</strong>让你在人际中表现出很强的包容力和同理心，容易收获信任和友谊。';
+    else if (a <= 40) t += '<br><br>你的<strong>独立性</strong>在人际中表现明显，你有清晰的立场和判断，在需要独立决策的情境中具有优势。';
 
-    if(n>=60) text += '<br><br>需要注意：你的<strong>情绪敏感度较高</strong>，在人际冲突或高压情境中容易产生较大情绪波动。建议学习一些情绪调节技巧，保护好重要的人际关系。';
-    else if(n<=40) text += '<br><br>你的<strong>情绪稳定性</strong>是你亲密关系的"稳定器"。你能为周围的人带来安心感和可依赖感，是朋友们遇到困难时最愿意倾诉的对象。';
-    return text;
+    if (n >= 60)      t += '<br><br>注意：你的<strong>情绪敏感度较高</strong>，在人际冲突或高压情境中容易产生较大情绪波动。建议学习情绪调节技巧，保护好重要的人际关系。';
+    else if (n <= 40) t += '<br><br>你的<strong>情绪稳定性</strong>是亲密关系的"稳定器"。你能为周围的人带来安心感，是朋友遇到困难时最愿意倾诉的对象。';
+    return t;
 }
 
-function generateCareer(){
+function genCareer(){
     const picks = [];
-    const profs = {
-        O:['创意设计师','内容策划','科研人员','产品经理','艺术家','作家','战略咨询师'],
-        C:['财务审计','项目管理','律师','医生','质量检测工程师','人力资源经理','企业高管'],
-        E:['销售经理','公关专员','培训师','导游','主持人','外联经理','市场总监','保险顾问'],
-        A:['心理咨询师','护士','社会工作者','教师','客服经理','非营利组织负责人','HRBP'],
-    };
-    DIM_ORDER.forEach(d=>{
-        if(getLevel(scores[d])>=4){
-            picks.push(...profs[d].slice(0,3));
-        }
+    DIM_ORDER.forEach(d => {
+        if (getLevel(scores[d]) >= 4) picks.push(...DIMS[d].careers);
     });
-    const unique = [...new Set(picks)].slice(0,9);
-    return `
-        以下职业方向与你的性格特质较为匹配（仅供参考，不代表唯一选择）：<br><br>
-        ${unique.length>0 ? unique.map(p=>`<span style="display:inline-block;background:#f0f0f8;padding:5px 12px;border-radius:20px;font-size:13px;margin:3px;display:inline-block">${p}</span>`).join('') : '你的人格特质均衡，适合多元化职业路径。'}
-        <br><br>
-        <strong>匹配逻辑说明：</strong>
-        ${getLevel(scores.O)>=4?'高开放性让你在需要创新、创意的岗位上更能发挥价值； ':''}
-        ${getLevel(scores.C)>=4?'高责任心让你在需要严谨、有序的职业中表现出色； ':''}
-        ${getLevel(scores.E)>=4?'高外向性让你在需要频繁人际互动的岗位上更有优势； ':''}
-        ${getLevel(scores.A)>=4?'高宜人性让你在需要合作、同理心的领域如鱼得水； ':''}
-        ${getLevel(scores.N)<=2?'你的情绪稳定性让你适合高压、高要求的岗位。':''}
-    `;
+    const uniq = [...new Set(picks)].slice(0, 9);
+    if (uniq.length === 0) return '你的人格特质组合较为均衡，适合多元化的职业路径。建议结合自身专业背景和兴趣爱好进行职业探索。';
+    const tags = uniq.map(p => `<span style="display:inline-block;background:#f0f0fa;padding:5px 13px;border-radius:20px;font-size:13px;margin:3px 3px 0 0">${p}</span>`).join('');
+    let logic = [];
+    if (getLevel(scores.O) >= 4) logic.push('高开放性让你在需要创新的岗位上更有优势');
+    if (getLevel(scores.C) >= 4) logic.push('高责任心让你在需要严谨有序的职业中表现出色');
+    if (getLevel(scores.E) >= 4) logic.push('高外向性让你在人际密集型岗位上更具竞争力');
+    if (getLevel(scores.A) >= 4) logic.push('高宜人性让你在合作型领域如鱼得水');
+    if (getLevel(scores.N) <= 2) logic.push('情绪稳定性让你能胜任高压和高要求的岗位');
+    return `以下职业方向与你的性格特质较为匹配（仅供参考）：<br><br>${tags}<br><br><strong>匹配逻辑：</strong>${logic.join('；')}。`;
 }
 
-function generateMental(){
-    const n = scores.N, a = scores.A, c = scores.C;
-    let text = '';
-    if(n<=40) text += '<strong>情绪调节能力优秀：</strong>你面对压力时能保持较好的心理平衡，不容易被焦虑和挫折击垮。这种心理韧性是长期心理健康的重要保护因素。';
-    else if(n<=60) text += '<strong>情绪稳定性中等：</strong>你偶尔会受到情绪波动的困扰，但总体上有较好的自我调节能力。建议继续关注压力管理，保持规律的运动和睡眠习惯。';
-    else text += '<strong>情绪管理需要关注：</strong>你比常人更容易感到焦虑、紧张或情绪低落。建议定期进行心理放松练习（如正念冥想），必要时寻求专业心理咨询支持。';
+function genMental(){
+    const n = scores.N, c = scores.C, a = scores.A;
+    let t = '';
+    if (n <= 40)      t += '<strong>情绪调节能力优秀：</strong>你面对压力时能保持良好的心理平衡，不容易被焦虑和挫折击垮。这种心理韧性是长期心理健康的重要保护因素。';
+    else if (n <= 60) t += '<strong>情绪稳定性中等：</strong>你偶尔会受到情绪波动的困扰，但总体上有较好的自我调节能力。建议保持规律运动和充足睡眠，关注压力管理。';
+    else              t += '<strong>情绪管理需要关注：</strong>你比常人更容易感到焦虑、紧张或情绪低落。建议定期进行正念冥想或呼吸放松练习，必要时寻求专业心理咨询支持。';
 
-    if(c>=60) text += '<br><br><strong>自我控制力强：</strong>你的自律习惯对心理健康有积极影响。有研究表明，高责任心的人往往有更好的健康行为（如规律作息、不吸烟饮酒等）。';
-    if(a>=60) text += '<br><br><strong>社会支持资源丰富：</strong>你的亲社会特质让你容易建立高质量的社会关系，良好的社会支持网络是心理健康的重要保障。';
-    return text;
+    if (c >= 60) t += '<br><br><strong>自我控制力强：</strong>高责任心者往往有更良好的健康行为（如规律作息、不吸烟饮酒等），对心理健康有积极影响。';
+    if (a >= 60) t += '<br><br><strong>社会支持资源丰富：</strong>你的亲社会特质让你容易建立高质量的社会关系，良好的社会支持网络是心理健康的重要保障。';
+    return t;
 }
 
-// ── PDF Export ──
-document.getElementById('btn-pdf').onclick = function(){
-    if(typeof html2pdf === 'undefined'){
-        // Load html2pdf.js
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
-        s.onload = ()=>exportPDF();
-        document.head.appendChild(s);
-    } else {
-        exportPDF();
-    }
+// ── PDF Export (html2pdf.js) ──
+// Key fix: hide fixed nav + gradient bg before capture, restore after
+document.getElementById('btnPdf').onclick = function(){
+    const nav      = document.getElementById('siteNav');
+    const body     = document.body;
+    const container = document.getElementById('mainContainer');
+
+    // Save original styles
+    const origNavDisplay    = nav.style.display;
+    const origBodyBg        = body.style.background;
+    const origContainerPad  = container.style.padding;
+
+    // Prepare for clean PDF capture
+    nav.style.display    = 'none';
+    body.style.background = '#f0f4f8';           // clean solid bg for PDF
+    container.style.padding = '20px 20px 48px';   // less top padding without nav
+
+    // Also give the report page a white background for PDF readability
+    document.getElementById('page-report').style.background = 'white';
+    document.getElementById('page-report').style.padding = '24px';
+    document.querySelectorAll('#page-report .card').forEach(c => {
+        c.style.background = 'white';
+        c.style.border = '1px solid #eee';
+        c.style.backdropFilter = 'none';
+        c.style.webkitBackdropFilter = 'none';
+    });
+
+    const filename = '大五人格测试报告_' +
+        new Date().toLocaleDateString('zh-CN').replace(/\//g,'-') + '.pdf';
+
+    // Re-draw radar to white bg first
+    const canvas = document.getElementById('radarCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawRadar();
+
+    html2pdf().set({
+        margin: 8,
+        filename,
+        image:  { type: 'jpeg', quality: 0.92 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#f0f4f8',
+            logging: false,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    }).from(document.getElementById('page-report')).save().then(() => {
+        // Restore styles
+        nav.style.display          = origNavDisplay;
+        body.style.background      = origBodyBg;
+        container.style.padding    = origContainerPad;
+        document.getElementById('page-report').style.background = '';
+        document.getElementById('page-report').style.padding = '';
+        document.querySelectorAll('#page-report .card').forEach(c => {
+            c.style.background = '';
+            c.style.border = '';
+            c.style.backdropFilter = '';
+            c.style.webkitBackdropFilter = '';
+        });
+        // Re-draw radar to transparent bg
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawRadar();
+    });
 };
 
-function exportPDF(){
-    const opt = {
-        margin: 10,
-        filename: '大五人格测试报告_' + new Date().toLocaleDateString('zh-CN').replace(/\//g,'-') + '.pdf',
-        image:{type:'jpeg',quality:0.98},
-        html2canvas:{scale:2,useCORS:true},
-        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-    };
-    html2pdf().set(opt).from(document.getElementById('page-report')).save();
-}
-
-document.getElementById('btn-restart').onclick = function(){
+// ── Restart ──
+document.getElementById('btnRestart').onclick = function(){
+    // Re-shuffle for a fresh order
+    const fresh = shuffle(RAW_QUESTIONS);
+    QUESTIONS.length = 0;
+    QUESTIONS.push(...fresh);
     currentQ = 0;
-    answers = new Array(QUESTIONS.length).fill(null);
-    scores = {};
+    answers  = new Array(QUESTIONS.length).fill(null);
+    scores   = {};
     showPage('landing');
 };
 
-// Init
+// ── Init ──
 renderQuestion();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" defer></script>
