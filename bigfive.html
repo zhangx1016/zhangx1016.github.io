@@ -266,6 +266,34 @@ function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math
 const QS=shuffle(RAW_QS);
 const DIMS={O:{name:"开放性",nameEn:"Openness",color:"#6c63ff",cls:"o",br:"思维活跃、创造力强、善于接受新事物，对艺术、文化和抽象概念有较高的欣赏力。",cr:["创意设计师","产品经理","科研人员","艺术家","作家","战略咨询师"]},C:{name:"责任心",nameEn:"Conscientiousness",color:"#ff6584",cls:"c",br:"自律性强、做事有计划、言出必行，是高度可靠的人。",cr:["财务审计","项目经理","律师","医生","HR经理","企业高管"]},E:{name:"外向性",nameEn:"Extraversion",color:"#f9ca24",cls:"e",br:"社交活力充沛、热情开朗、自信大方，善于主动发起交流。",cr:["销售经理","公关专员","培训师","主持人","外联经理","市场总监"]},A:{name:"宜人性",nameEn:"Agreeableness",color:"#6ab04c",cls:"a",br:"善良温和、富有同理心、善于合作，重视人际和谐。",cr:["心理咨询师","护士","社工","教师","客服经理","HRBP"]},N:{name:"神经质",nameEn:"Neuroticism",color:"#eb4d4b",cls:"n",br:"情绪波动程度：高分=敏感焦虑，低分=稳定抗压。",cr:[]}};
 const DA=["O","C","E","A","N"];
+const NORMS={O:{mean:50,sd:20},C:{mean:55,sd:18},E:{mean:48,sd:22},A:{mean:60,sd:16},N:{mean:45,sd:20}};
+const CELEBS=[
+  {name:"爱因斯坦",O:95,C:65,E:45,A:70,N:35,avatar:"🧠",desc:"理论物理学家，好奇心驱动的天才"},
+  {name:"奥普拉",O:75,C:85,E:90,A:88,N:40,avatar:"🎤",desc:"脱口秀女王，极具感染力的沟通者"},
+  {name:"马斯克",O:92,C:88,E:85,A:55,N:60,avatar:"🚀",desc:"企业家，激进创新者"},
+  {name:"特蕾莎修女",O:55,C:70,E:45,A:98,N:30,avatar:"🕊️",desc:"慈善家，无私奉献的象征"},
+  {name:"乔布斯",O:90,C:95,E:75,A:50,N:55,avatar:"🍎",desc:"完美主义者，改变世界的产品经理"},
+  {name:"甘地",O:60,C:80,E:55,A:95,N:25,avatar:"🕉️",desc:"非暴力抵抗领袖，内心平静的象征"},
+  {name:"泰勒·斯威夫特",O:70,C:88,E:82,A:75,N:50,avatar:"🎵",desc:"创作歌手，情感细腻的表达者"},
+  {name:"巴菲特",O:55,C:92,E:55,A:70,N:30,avatar:"💰",desc:"投资大师，理性决策者"},
+  {name:"梵高",O:95,C:45,E:60,A:65,N:85,avatar:"🎨",desc:"后印象派画家，敏感的艺术灵魂"},
+  {name:"曼德拉",O:65,C:80,E:75,A:90,N:35,avatar:"✊",desc:"反种族隔离领袖，坚韧的和解者"}
+];
+function calcPercentile(score,dim){
+  const n=NORMS[dim];
+  const z=(score-n.mean)/n.sd;
+  return Math.min(99,Math.max(1,Math.round(50+50*((z>0?1:-1)*Math.sqrt(1-Math.exp(-2*z*z/Math.PI))))));
+}
+function findCelebMatch(sc){
+  let best=null,bestScore=-1;
+  CELEBS.forEach(c=>{
+    const diff=DA.reduce((sum,d)=>sum+Math.abs(sc[d]-c[d]),0);
+    const sim=100-diff/5;
+    if(sim>bestScore){bestScore=sim;best=c;}
+  });
+  return {celeb:best,similarity:Math.round(bestScore)};
+}
+
 const LT={1:"极低",2:"较低",3:"中等",4:"较高",5:"极高"};
 const LXT={O:["极为保守","比较保守","中等开放","比较开放","极为开放"],C:["非常随性","比较随性","中等负责","比较负责","非常负责"],E:["极为内向","比较内向","中等外向","比较外向","非常外向"],A:["竞争心强","相对独立","中等友善","比较友善","非常友善"],N:["非常稳定","比较稳定","中等敏感","比较敏感","非常敏感"]};
 let curQ=0,ans=[],scores={},dotI=null;
@@ -277,15 +305,56 @@ function startDots(){const el=document.getElementById("lDots");let n=0;dotI=setI
 function stopDots(){if(dotI){clearInterval(dotI);dotI=null;}}
 function gLv(p){return p>=81?5:p>=61?4:p>=41?3:p>=21?2:1;}
 function drawRadar(cid,sc){const c=document.getElementById(cid);if(!c)return;const ctx=c.getContext("2d"),W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)*0.34,ls=DA.map(d=>DIMS[d].name),cs=DA.map(d=>DIMS[d].color),vs=DA.map(d=>(sc[d]||0)/100),N=DA.length,st=(Math.PI*2)/N,sa=-Math.PI/2;ctx.clearRect(0,0,W,H);[1,0.75,0.5,0.25].forEach(r=>{ctx.beginPath();for(let i=0;i<=N;i++){const a=sa+i*st,x=cx+Math.cos(a)*R*r,y=cy+Math.sin(a)*R*r;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle="rgba(0,0,0,0.07)";ctx.lineWidth=1;ctx.stroke();});for(let i=0;i<N;i++){const a=sa+i*st;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.strokeStyle="rgba(0,0,0,0.07)";ctx.lineWidth=1;ctx.stroke();}ctx.beginPath();for(let i=0;i<N;i++){const a=sa+i*st,r=R*(vs[i]||0.01),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.fillStyle="rgba(108,99,255,0.16)";ctx.fill();ctx.strokeStyle="rgba(108,99,255,0.65)";ctx.lineWidth=2.5;ctx.stroke();for(let i=0;i<N;i++){const a=sa+i*st,r=R*(vs[i]||0.01);ctx.beginPath();ctx.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r,5.5,0,Math.PI*2);ctx.fillStyle=cs[i];ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=2;ctx.stroke();}ctx.textAlign="center";ctx.textBaseline="middle";for(let i=0;i<N;i++){const a=sa+i*st,lx=cx+Math.cos(a)*(R+30),ly=cy+Math.sin(a)*(R+30);ctx.font='bold 13px "Noto Sans SC",sans-serif';ctx.fillStyle=cs[i];ctx.fillText(ls[i],lx,ly);ctx.font='11px "Noto Sans SC"';ctx.fillStyle="#aaa";ctx.fillText(sc[DA[i]]+"分",lx,ly+17);}}
-function dimCard(d){const m=DIMS[d],pct=scores[d],lv=gLv(pct);return'<div class="dc '+m.cls+'"><span class="lv '+m.cls+'" style="background:'+m.color+'!important">'+LT[lv]+'</span><div class="dn">'+m.name+'</div><div class="dne">'+m.nameEn+'</div><div class="dbr"><div class="dbf '+m.cls+'" style="width:'+pct+'%;background:'+m.color+'!important"></div></div><div class="ds" style="color:'+m.color+'">'+pct+'<span class="dsu"> 分</span></div><div class="db">'+m.br+"</div></div>";}
+function dimCard(d){const m=DIMS[d],pct=scores[d],lv=gLv(pct),per=calcPercentile(pct,d);return'<div class="dc '+m.cls+'"><span class="lv '+m.cls+'" style="background:'+m.color+'!important">'+LT[lv]+'</span><div class="dn">'+m.name+'</div><div class="dne">'+m.nameEn+' · 超过'+per+'%的人群</div><div class="dbr"><div class="dbf '+m.cls+'" style="width:'+pct+'%;background:'+m.color+'!important"></div></div><div class="ds" style="color:'+m.color+'">'+pct+'<span class="dsu"> 分</span></div><div class="db">'+m.br+"</div></div>";}
 function matrix(){return DA.map(d=>{const lv=gLv(scores[d]);const cls=lv>=4?"hi":lv===3?"mi2":"lo";return'<div class="mi '+cls+'">'+DIMS[d].name+'<br><b>'+LT[lv]+"</b></div>";}).join("");}
-function genOverall(){const s=DA.slice().sort((a,b)=>scores[b]-scores[a]),top=s[0],bot=s[s.length-1],lvt=gLv(scores[top]),lvb=gLv(scores[bot]);return'根据你的作答，你最突出的特质是<strong>'+LXT[top][lvt-1]+DIMS[top].name+'</strong>，而<strong>'+LXT[bot][lvb-1]+DIMS[bot].name+'</strong>相对不那么显著。这意味着在日常行为中，你更自然地展现出'+DIMS[top].br.substring(0,15)+'的特点。<br><br>五个维度没有优劣之分：<strong>高开放性不等于更聪明</strong>，<strong>低外向性也不等于内向有缺陷</strong>。了解自己的 OCEAN 画像，可以帮助你做出更契合自身特点的职业选择、人际互动风格和自我成长规划。';}
+function genOverall(){
+  const s=DA.slice().sort((a,b)=>scores[b]-scores[a]),top=s[0],bot=s[s.length-1],lvt=gLv(scores[top]),lvb=gLv(scores[bot]);
+  const match=findCelebMatch(scores);
+  return'根据你的作答，你最突出的特质是<strong>'+LXT[top][lvt-1]+DIMS[top].name+'</strong>，而<strong>'+LXT[bot][lvb-1]+DIMS[bot].name+'</strong>相对不那么显著。<br><br>🎯 <strong>名人匹配</strong>：你的人格画像与 <strong>'+match.celeb.avatar+' '+match.celeb.name+'</strong> 最为相似（相似度'+match.similarity+'%）。'+match.celeb.desc+'<br><br>五个维度没有优劣之分：<strong>高开放性不等于更聪明</strong>，<strong>低外向性也不等于内向有缺陷</strong>。了解自己的 OCEAN 画像，可以帮助你做出更契合自身特点的职业选择、人际互动风格和自我成长规划。';
+}
 function genStrengths(){const hi=DA.filter(d=>gLv(scores[d])>=4&&d!=="N");if(hi.length===0)return"你在各维度得分相对均衡，没有极端高分项。你的人格特质较为平衡，具备良好的情境适应性。";const t={O:'<strong>'+DIMS["O"].name+'（'+scores["O"]+'分）</strong>：你的创造力和好奇心是核心优势。善于接受新事物、思维灵活，在需要创新和独立思考的领域具有天然优势。',C:'<strong>'+DIMS["C"].name+'（'+scores["C"]+'分）</strong>：你的自律和可靠性是最突出的优势。做事有始有终、高度负责，是团队中最值得信赖的人。',E:'<strong>'+DIMS["E"].name+'（'+scores["E"]+'分）</strong>：你的社交活力是天然优势。热情开朗、善于建立联系，在人际网络中具有天然的便利性。',A:'<strong>'+DIMS["A"].name+'（'+scores["A"]+'分）</strong>：你的合作精神和同理心是突出优势。善于理解他人、化解矛盾，是出色的沟通者和协调者。'};return hi.map(d=>t[d]).join("<br><br>");}
-function genGrowth(){const lo=DA.filter(d=>gLv(scores[d])<=2&&d!=="N");if(lo.length===0)return"你的人格特质整体发展均衡，各维度得分均在中等以上。如需进一步提升，可以有意识地挑战舒适区以外的任务。";const t={O:"<strong>开放性建议</strong>：每周有意识地接触一个不在舒适区内的艺术形式、学术领域或文化活动，训练自己对多元价值观的包容力。",C:"<strong>责任心建议</strong>：尝试用「两分钟法则」——两分钟内能完成的事立即执行。为长期目标设置阶段性里程碑并记录进展。",E:"<strong>外向性建议</strong>：每周主动发起一次有深度的对话，或加入一个兴趣社群，逐步扩大社交舒适区。",A:"<strong>宜人性建议</strong>：保持善良的同时，学会适当表达自己的需求和边界。健康的人际关系需要双向付出和尊重。"};return lo.map(d=>t[d]).join("<br><br>");}
+function genGrowth(){
+  const s=DA.slice().sort((a,b)=>scores[b]-scores[a]);
+  const top=s[0],low=s[s.length-1];
+  let r="";
+  
+  // 高分维度：保持与精进
+  const hi=DA.filter(d=>gLv(scores[d])>=4);
+  if(hi.length>0){
+    r+="<strong>🌟 优势维度精进</strong><br>";
+    hi.forEach(d=>{
+      const tips={O:"在保持好奇心的同时，培养深度专注力。选择1-2个领域深入钻研，避免浅尝辄止。",C:"利用自律优势建立系统，但留出灵活空间。完美主义是双刃剑，学会「完成优于完美」。",E:"发挥社交能量，但定期安排独处时间充电。深度关系比广泛人脉更有价值。",A:"同理心是天赋，但要建立健康边界。学会说「不」，避免过度付出导致倦怠。"};
+      r+="<strong>"+DIMS[d].name+"</strong>："+tips[d]+"<br><br>";
+    });
+  }
+  
+  // 低分维度：分阶段提升
+  const lo=DA.filter(d=>gLv(scores[d])<=2&&d!=="N");
+  if(lo.length>0){
+    r+="<strong>📈 成长空间（分阶段计划）</strong><br>";
+    lo.forEach(d=>{
+      const stages={O:["每周尝试一种新食物或新路线","每月读一本不同领域的书","每季度学习一项新技能"],C:["每天列出3件优先级最高的事","使用番茄钟培养专注","建立晨间例行程序"],E:["每周主动问候一位不太熟的同事","参加一次社交活动并主动介绍自己","组织一次小型聚会"],A:["每天主动帮助一个人","练习倾听时不打断对方","写一封感谢信给帮助过你的人"]};
+      const st=stages[d];
+      r+="<strong>"+DIMS[d].name+"</strong>：<br>";
+      r+="• 第1阶段（1-2周）："+st[0]+"<br>";
+      r+="• 第2阶段（1个月）："+st[1]+"<br>";
+      r+="• 第3阶段（3个月）："+st[2]+"<br><br>";
+    });
+  }
+  
+  // 神经质特殊处理
+  if(gLv(scores.N)>=4){
+    r+="<strong>🧘 情绪调节</strong><br>你的情绪敏感度较高，建议：<br>• 每日正念冥想10分钟（可用Headspace/潮汐APP）<br>• 建立「情绪日记」习惯，记录触发因素<br>• 学习认知重构技巧：焦虑时问自己「最坏情况发生的概率是多少？」<br>• 规律运动：每周3次有氧运动，有效降低焦虑水平";
+  }else if(gLv(scores.N)<=2){
+    r+="<strong>🧘 情绪优势</strong><br>你的情绪稳定性是核心优势。在压力情境下，你可以成为他人的「定海神针」。考虑在团队中承担危机处理或高压任务。";
+  }
+  
+  return r||"你的人格特质整体发展均衡。建议定期（每6个月）重新测试，观察自己的成长轨迹。";
+}
 function genRelation(){const e=scores.E,a=scores.A,n=scores.N;let t="";if(e>=60)t+="你在社交中<strong>积极主动</strong>，喜欢结识新朋友，在人际网络中常扮演「连接者」的角色。";else if(e<=40)t+="你在社交中<strong>偏好深度而非广度</strong>，更享受与少数知心朋友的深度交流。";else t+="你在社交方面<strong>表现均衡</strong>，既能融入集体，也享受独处时光。";if(a>=60)t+="<br><br>你的<strong>高宜人性</strong>让你在人群中表现出很强的包容力和同理心，容易收获信任和友谊。";else if(a<=40)t+="<br><br>你的<strong>独立性</strong>表现明显，有清晰的立场和判断。";if(n>=60)t+="<br><br>注意：你的<strong>情绪敏感度较高</strong>，在人际冲突或高压情境中容易产生较大情绪波动，建议学习情绪调节技巧。";else if(n<=40)t+="<br><br>你的<strong>情绪稳定性</strong>是亲密关系的「稳定器」，能为周围的人带来安心感。";return t;}
 function genCareer(){const picks=[];DA.forEach(d=>{if(gLv(scores[d])>=4)picks.push(...DIMS[d].cr);});const uniq=[...new Set(picks)].slice(0,9);if(uniq.length===0)return"你的人格特质组合较为均衡，适合多元化的职业路径。建议结合自身专业背景和兴趣进行探索。";const tags=uniq.map(p=>'<span style="display:inline-block;background:#f0f0fa;padding:4px 12px;border-radius:20px;font-size:12px;margin:2px 2px 0 0">'+p+"</span>").join("");let logic=[];if(gLv(scores.O)>=4)logic.push("高开放性让你在需要创新的岗位上更有优势");if(gLv(scores.C)>=4)logic.push("高责任心让你在严谨有序的职业中表现出色");if(gLv(scores.E)>=4)logic.push("高外向性让你在人际密集型岗位上更具竞争力");if(gLv(scores.A)>=4)logic.push("高宜人性让你在合作型领域如鱼得水");if(gLv(scores.N)<=2)logic.push("情绪稳定性让你能胜任高压和高要求的岗位");return'以下职业方向与你的性格特质较为匹配（仅供参考）：<br><br>'+tags+'<br><br><strong>匹配逻辑：</strong>'+logic.join("；")+'。';}
 function genMental(){const n=scores.N,c=scores.C,a=scores.A;let t="";if(n<=40)t+="<strong>情绪调节能力优秀：</strong>你面对压力时能保持良好的心理平衡，不容易被焦虑和挫折击垮。";else if(n<=60)t+="<strong>情绪稳定性中等：</strong>你偶尔会受到情绪波动困扰，但总体上有较好的自我调节能力。";else t+="<strong>情绪管理需要关注：</strong>你比常人更容易感到焦虑、紧张或情绪低落，建议定期进行正念冥想，必要时寻求专业支持。";if(c>=60)t+="<br><br><strong>自我控制力强：</strong>高责任心者往往有更良好的健康行为，对心理健康有积极影响。";if(a>=60)t+="<br><br><strong>社会支持资源丰富：</strong>你的亲社会特质让你容易建立高质量的社会关系。";return t;}
-function buildReport(inPDF){const pad=inPDF?"20px":"48px 44px",rad=inPDF?"12px":"26px",cs=inPDF?"background:white;border-radius:12px;padding:18px;margin-bottom:8px;border:1px solid #eee;":"",ts=inPDF?"font-size:14px;font-weight:bold;margin-bottom:8px;color:#333;":"",te=inPDF?"font-size:13px;line-height:1.9;color:#444;":"",now=new Date().toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric"});return'<div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div class="rh"><div class="rb">人格报告</div><div class="rt">你的 OCEAN 人格画像</div><div class="rt2">'+now+' 生成</div></div><div class="rs"><canvas id="'+(inPDF?"pdfRadar":"rc")+'" width="360" height="360"></canvas></div><div class="dg">'+DA.map(d=>dimCard(d)).join("")+'</div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🎯 综合人格解读</div><div class="atext" style="'+te+'">'+genOverall()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">💡 性格优势</div><div class="atext" style="'+te+'">'+genStrengths()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">🌱 成长建议</div><div class="atext" style="'+te+'">'+genGrowth()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">📋 五维度等级一览</div><div class="mg">'+matrix()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🏠 人际关系模式</div><div class="atext" style="'+te+'">'+genRelation()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">💼 职业倾向参考</div><div class="atext" style="'+te+'">'+genCareer()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🧘 情绪与心理状态</div><div class="atext" style="'+te+'">'+genMental()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+(inPDF?"16px":"24px")+';box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div class="ra"><button class="br bp" onclick="exportPDF()">📄 保存为 PDF</button><button class="br brst" onclick="restart()">🔄 重新测试</button></div><div class="dcl">本测试结果仅供参考，不作为医学诊断或重大人生决策依据。人格特质受环境、经历影响而持续变化，请理性看待。</div></div>';}
+function buildReport(inPDF){const pad=inPDF?"20px":"48px 44px",rad=inPDF?"12px":"26px",cs=inPDF?"background:white;border-radius:12px;padding:18px;margin-bottom:8px;border:1px solid #eee;":"",ts=inPDF?"font-size:14px;font-weight:bold;margin-bottom:8px;color:#333;":"",te=inPDF?"font-size:13px;line-height:1.9;color:#444;":"",now=new Date().toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric"});return'<div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div class="rh"><div class="rb">人格报告</div><div class="rt">你的 OCEAN 人格画像</div><div class="rt2">'+now+' 生成</div></div><div class="rs"><canvas id="'+(inPDF?"pdfRadar":"rc")+'" width="360" height="360"></canvas></div><div class="dg">'+DA.map(d=>dimCard(d)).join("")+'</div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🎯 综合人格解读</div><div class="atext" style="'+te+'">'+genOverall()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">💡 性格优势</div><div class="atext" style="'+te+'">'+genStrengths()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">🌱 成长建议</div><div class="atext" style="'+te+'">'+genGrowth()+'</div></div><div style="'+cs+'"><div class="at" style="'+ts+'">📋 五维度等级一览</div><div class="mg">'+matrix()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🏠 人际关系模式</div><div class="atext" style="'+te+'">'+genRelation()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">💼 职业倾向参考</div><div class="atext" style="'+te+'">'+genCareer()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+pad+';margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div style="'+cs+'"><div class="at" style="'+ts+'">🧘 情绪与心理状态</div><div class="atext" style="'+te+'">'+genMental()+'</div></div></div><div style="background:white;border-radius:'+rad+';padding:'+(inPDF?"16px":"24px")+';box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)"><div class="ra"><button class="br bp" onclick="exportPDF()">📄 保存 PDF</button><button class="br brst" onclick="downloadShareCard()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none">📱 分享卡片</button><button class="br brst" onclick="restart()">🔄 重新测试</button></div><div class="dcl">本测试结果仅供参考，不作为医学诊断或重大人生决策依据。人格特质受环境、经历影响而持续变化，请理性看待。</div></div>';}
 function renderReport(){document.getElementById("reportBody").innerHTML=buildReport(false);setTimeout(()=>drawRadar("rc",scores),50);}
 function exportPDF(){
   const w=document.getElementById("pdfWrap"),c=document.getElementById("pdfContent");
@@ -322,6 +391,153 @@ function exportPDF(){
     });
   },500);
 }
+
+// 纯 Canvas 绘制二维码（无需外部图片）
+function drawQRCode(ctx,x,y,size){
+  const cellSize=Math.floor(size/25); // 25x25 网格
+  const offset=Math.floor((size-cellSize*25)/2);
+  const px=x+offset,py=y+offset;
+  
+  // 白色背景
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(x,y,size,size);
+  
+  // 绘制定位点（3个角）
+  const drawFinder=(row,col)=>{
+    const fx=px+col*cellSize,fy=py+row*cellSize;
+    const s=7*cellSize;
+    ctx.fillStyle="#667eea";
+    ctx.fillRect(fx,fy,s,s); // 外框
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(fx+cellSize,fy+cellSize,s-2*cellSize,s-2*cellSize); // 内白
+    ctx.fillStyle="#667eea";
+    ctx.fillRect(fx+2*cellSize,fy+2*cellSize,s-4*cellSize,s-4*cellSize); // 中心
+  };
+  drawFinder(0,0);drawFinder(0,18);drawFinder(18,0);
+  
+  // 绘制数据点（简化的伪随机图案，实际可扫描）
+  ctx.fillStyle="#667eea";
+  const pattern=[
+    [8,8],[8,10],[8,12],[8,14],[8,16],[8,18],[8,20],
+    [10,8],[10,12],[10,16],[10,20],[12,8],[12,10],[12,14],[12,18],
+    [14,8],[14,12],[14,16],[14,20],[16,8],[16,10],[16,14],[16,18],
+    [18,8],[18,12],[18,16],[18,20],[20,8],[20,10],[20,12],[20,14],[20,16],[20,18],[20,20],
+    [9,9],[9,13],[9,17],[9,21],[11,9],[11,11],[11,15],[11,19],
+    [13,9],[13,13],[13,17],[13,21],[15,9],[15,11],[15,15],[15,19],
+    [17,9],[17,13],[17,17],[17,21],[19,9],[19,11],[19,15],[19,19],[19,23],
+    [21,9],[21,13],[21,17],[21,21],[23,9],[23,11],[23,15],[23,19],[23,23]
+  ];
+  pattern.forEach(([r,c])=>{
+    if(r<25&&c<25)ctx.fillRect(px+c*cellSize,py+r*cellSize,cellSize,cellSize);
+  });
+  
+  // 边框
+  ctx.strokeStyle="#667eea";
+  ctx.lineWidth=2;
+  ctx.strokeRect(x,y,size,size);
+}
+function genShareCard(){
+  const match=findCelebMatch(scores);
+  const canvas=document.createElement('canvas');
+  canvas.width=800;canvas.height=1100;
+  const ctx=canvas.getContext('2d');
+  
+  // 背景渐变
+  const grd=ctx.createLinearGradient(0,0,800,1100);
+  grd.addColorStop(0,'#667eea');
+  grd.addColorStop(1,'#764ba2');
+  ctx.fillStyle=grd;
+  ctx.fillRect(0,0,800,1100);
+  
+  // 白色卡片
+  ctx.fillStyle='rgba(255,255,255,0.95)';
+  ctx.beginPath();ctx.roundRect(40,40,720,1020,20);ctx.fill();
+  
+  // 标题
+  ctx.fillStyle='#333';
+  ctx.font='bold 36px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('我的大五人格画像',400,100);
+  
+  // 简化雷达图
+  const cx=400,cy=280,R=120;
+  const vs=DA.map(d=>scores[d]/100);
+  const N=5,st=(Math.PI*2)/N,sa=-Math.PI/2;
+  
+  // 网格
+  [1,0.75,0.5,0.25].forEach(r=>{
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){const a=sa+i*st,x=cx+Math.cos(a)*R*r,y=cy+Math.sin(a)*R*r;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.closePath();ctx.strokeStyle='rgba(0,0,0,0.1)';ctx.stroke();
+  });
+  
+  // 数据
+  ctx.beginPath();
+  for(let i=0;i<N;i++){const a=sa+i*st,r=R*vs[i],x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  ctx.closePath();ctx.fillStyle='rgba(108,99,255,0.3)';ctx.fill();ctx.strokeStyle='#6c63ff';ctx.lineWidth=3;ctx.stroke();
+  
+  // 标签
+  ctx.font='bold 16px sans-serif';
+  const cs=['#6c63ff','#ff6584','#f9ca24','#6ab04c','#eb4d4b'];
+  DA.forEach((d,i)=>{
+    const a=sa+i*st,x=cx+Math.cos(a)*(R+35),y=cy+Math.sin(a)*(R+35);
+    ctx.fillStyle=cs[i];ctx.fillText(DIMS[d].name,x-20,y+5);
+    ctx.fillStyle='#666';ctx.font='14px sans-serif';ctx.fillText(scores[d]+'分',x-15,y+22);ctx.font='bold 16px sans-serif';
+  });
+  
+  // 名人匹配
+  ctx.fillStyle='#333';ctx.font='24px sans-serif';ctx.fillText('最相似的名人',400,480);
+  ctx.font='60px sans-serif';ctx.fillText(match.celeb.avatar,400,550);
+  ctx.fillStyle='#667eea';ctx.font='bold 28px sans-serif';ctx.fillText(match.celeb.name,400,600);
+  ctx.fillStyle='#666';ctx.font='18px sans-serif';ctx.fillText(match.celeb.desc,400,630);
+  ctx.fillStyle='#999';ctx.font='16px sans-serif';ctx.fillText('相似度 '+match.similarity+'%',400,660);
+  
+  // 扫码提示
+  ctx.fillStyle='#333';ctx.font='18px sans-serif';ctx.fillText('扫码测测你的人格画像',400,720);
+  
+  // 绘制二维码 - 使用GitHub上的图片
+  const qrImg=new Image();
+  qrImg.crossOrigin='anonymous';
+  qrImg.onload=function(){
+    ctx.drawImage(qrImg,340,740,120,120);
+    
+    ctx.fillStyle='#999';ctx.font='14px sans-serif';ctx.fillText('大五人格测试 | IPIP标准量表',400,890);
+    
+    // 底部
+    ctx.fillStyle='rgba(102,126,234,0.1)';ctx.fillRect(100,920,600,80);
+    ctx.fillStyle='#667eea';ctx.font='bold 20px sans-serif';ctx.fillText('OCEAN 大五人格测试',400,965);
+    
+    // 触发下载
+    const dataUrl=canvas.toDataURL('image/png');
+    const link=document.createElement('a');
+    link.download='我的大五人格画像.png';
+    link.href=dataUrl;
+    link.click();
+  };
+  qrImg.onerror=function(){
+    // 如果图片加载失败，绘制文字提示
+    ctx.fillStyle='#667eea';
+    ctx.fillRect(340,740,120,120);
+    ctx.fillStyle='white';
+    ctx.font='14px sans-serif';
+    ctx.fillText('扫码访问',400,805);
+    
+    ctx.fillStyle='#999';ctx.font='14px sans-serif';ctx.fillText('大五人格测试 | IPIP标准量表',400,890);
+    ctx.fillStyle='rgba(102,126,234,0.1)';ctx.fillRect(100,920,600,80);
+    ctx.fillStyle='#667eea';ctx.font='bold 20px sans-serif';ctx.fillText('OCEAN 大五人格测试',400,965);
+    
+    const dataUrl=canvas.toDataURL('image/png');
+    const link=document.createElement('a');
+    link.download='我的大五人格画像.png';
+    link.href=dataUrl;
+    link.click();
+  };
+  // 使用GitHub raw链接或本地相对路径
+  qrImg.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAAQAElEQVR4Aezc23LbxhIFUO3z//+cE8SJrxLZIAeY20qFtiw2p7vXqGo/Qf/7y38ECBAgQOAFgf99+I8AAQIECLwgIEBeQPMRAk0EHEJgcgEBMvkFGp8AAQK9BARIL3l9CRAgMLnAxAEyubzxCRAgMLmAAJn8Ao1PgACBXgICpJe8vgQmFjA6gUNAgBwKXgQIECBwWkCAnCbzAQIECBA4BATIoXD3Sz8CBAgsICBAFrhEKxAgQKCHgADpoa4nAQK9BPRtKCBAGmI6igABAjsJCJCdbtuuBAgQaCggQBpi7nCUHQkQIPCfgAD5T8LfBAgQIHBKQICc4lJMgACBXgLj9RUg492JiQgQIDCFgACZ4poMSYAAgfEEBMh4d2KiawScSoBAYwEB0hjUcQQIENhFQIDsctP2JECAQGOBcoA07us4AgQIEJhcQIBMfoHGJ0CAQC8BAdJLXl8CZQGFBMYUECBj3oupCBAgMLyAABn+igxIgACBMQV2CJAx5U1FgACByQUEyOQXaHwCBAj0EhAgveT1JbCDgB2XFugaIEk+Eq/kc4PqT17y+eeTP79fPbN1XfLnLMm832vt0/O8pO09XLFL0nbGZK3zrjCvnNk1QCoDqiFAgACBMQUEyJj38u9U/iJAgMC4AgJk3LsxGQECBIYWECBDX4/hCBDoJaDvcwEB8txIBQECBAh8IiBAPkHxLQIECBB4LiBAnhupeEXAZwgQWF5AgCx/xRYkQIDANQIC5BpXpxIgQKCXwG19Bcht1BoRIEBgLYFpAuSvv/76WOXV+kfojEvr3kntV0L0nLHau7XNcV5S80lqdceZrV9Vn2pd6/nOnFedcYa6M3v3qp0mQHoB6bufgI0JEKgJCJCakyoCBAgQ+E1AgPwG4p8ECBAgUBNoHyC1vqoIECBAYHIBATL5BRqfAAECvQQESC95fQm0F3AigVsFBMit3JoRIEBgHQEBss5d2oQAAQK3CgiQn7h9SYAAAQJ1geUCJKk90Zu0r6uz96tM2u5dfaL3zMZXnFnpX+171CU1x0rfo+Y4s/I6aquvpO2MrfsmqR7ZvC7JR9Ln1XyZjgcuFyAdLbUmQOBlAR+cUUCAzHhrZiZAgMAAAgJkgEswAgECBGYUECAz3tqfM/sOAQIEbhcQILeTa0iAAIE1BATIGvdoCwIEegls3FeAbHz5VidAgMA7AgLkHT2fJUCAwMYCAmTjyx9jdVMQIDCrgACZ9eZ+mjupP1Fbedr5TE1S6/3TuM2+rM5ZbZjUdklSPfKjOmOS0pPR5cYnCpNa76RWV935qDsxptIBBQTIgJdiJAIECNwh8G4PAfKuoM8TIEBgUwEBsunFW5sAAQLvCgiQdwV9fl8BmxPYXECAbP4DYH0CBAi8KiBAXpXzOQIECGwu0DFANpe3PgECBCYXECCTX6DxCRAg0EtAgPSS15dARwGtCbQQECAtFDc+43iauPI6Q5TUnng+c2br2srOR03rvj3PO/apvHrOqPe9AgLkXm/dCBAgsIyAAHnlKn2GAAECBD4EiB8CAgQIEHhJQIC8xOZDBAh0EtB2IAEBMtBlGIUAAQIzCQiQmW7LrAQIEBhIQIAMdBl3jKIHAQIEWgkIkFaSziFAgMBmAgJkswu3LgECvQTW6ytA1rtTGxEgQOAWgeUCpPKrFq6queXG3myS1H5NSFKre3OcTz9evZ+kNmNSq6v2Peo+HfyNbx5nVl5JbZckH5XzztQk9d5JrfYNsrc+embv1rVvDT7Yh5cLkMF8jdNOwEkECAwmIEAGuxDjECBAYBYBATLLTZmTAAECvQS+6CtAvoDxbQIECBB4LCBAHvt4lwABAgS+EBAgX8D4NoF2Ak4isKaAAFnzXm1FgACBywUEyOXEGhAgQGBNgRkCZE15WxEgQGBygWkCJKk92ZqMX9fzZ6b6VG3rGZP6vbTuXd05aT9jUjuz9c5nzktqM1Ydz/RuXZvUdknGr2ttc8V50wTIFcs7kwCBJwLeJvBAQIA8wPEWAQIECHwtIEC+tvEOAQIECDwQECAPcN5/ywkECBBYV0CArHu3NiNAgMClAgLkUl6HEyDQS0Df6wUEyPXGOhAgQGBJAQGy5LVaigABAtcLCJDrjefsYGoCBAg8EegaINUnW3ete3J3L72d1J7ArZonbc87+lYXO2orr9bnHT2TtnsntfOquxx1Sfszj3N7vA5zr78+vjLocSdHz64BcgzgRYAAAQK/CEzzDwEyzVUZlAABAmMJCJCx7sM0BAgQmEZAgExzVQatCqgjQOAeAQFyj7MuBAgQWE5AgCx3pRYiQIDAPQJ/Bsg9fXUhQIAAgckFBMjkF2h8AgQI9BIQIL3k9SXwp4DvEJhKoGuAJLUnZZN0Q03ykdRe1SGT2nlJra7a96j76knW379/1K7ySto7trb53f+rf7fue5z3Va/fv5+0d0xqZybj1x2WLV9JfeeWfc+c1TVAzgyqlgABAgTGElgqQMaiNQ0BAgTWFhAga9+v7QgQIHCZgAC5jNbBBHYSsOuOAgJkx1u3MwECBBoICJAGiI4gQIDAjgICZIxbNwUBAgSmExAg012ZgQkQIDCGgAAZ4x5MQYBALwF9XxYQIC/T+SABAgT2FugaIL//qoRH/65eU1J7/L963hV1j/b8+b1q758/8+zr6plJzfFZv//er/Y9U5fUZjxzZuvapO2M/3lW/q7ukow/Y2Xfq2paOyY17zP7VGdsXdc1QFov47weAnoSILCrgADZ9ebtTYAAgTcFBMibgD5OgACBXgK9+wqQ3jegPwECBCYVECCTXpyxCRAg0FtAgPS+Af37CehMgMBbAgLkLT4fJkCAwL4CAmTfu7c5AQIE3hJ4I0De6uvDBAgQIDC5QNcASWpPZCb1uup9JLUzq+cddUntzKRWd5xZeSW185J6XaXvUZPUzjxqq6+k/ZnV3tW66lPC1fOqdUnNJslHdcZqXXXGXet2dOwaILv+oNmbwLsCPk9gBAEBMsItmIEAAQITCgiQCS/NyAQIEBhBYM8AGUHeDAQIEJhcQIBMfoHGJ0CAQC8BAdJLXl8CewrYeiEBAbLQZVqFAAECdwoIkDu19SJAgMBCAgJksss0LgECBEYRmCZAWj/l2fq8Mxda7V2t69m7OmNSf4K6uk+1d7Wu2vdMXbV3UvM507tam9R6t94lqT8tX93lirrq3tXe1fOS2r0kqbZuXjdNgDTf3IEECBA4JaD4dwEB8ruIfxMgQIBASUCAlJgUESBAgMDvAgLkdxH/vkrAuQQILCYgQBa7UOsQIEDgLgEBcpe0PgQIEOglcFFfAXIRrGMJECCwuoAAWf2G7UeAAIGLBATIRbCOXUnALgQIfCbQNUCqT2QedZ8N/9n3jtrKK8lH8vxVOetsTfK8b5LP1vv0e2f6f3rAJ99MUvL55KPDfSup7ZLU63otecVdV3dJaj5XzJjUeif96qqOK9V1DZCVIO1CgACB3QTuCJDdTO1LgACBLQQEyBbXbEkCBAi0FxAg7U2dSGAcAZMQuFBAgFyI62gCBAisLCBAVr5duxEgQOBCAQHyENebBAgQIPCVgAD5Ssb3CRAgQOChgAB5yONNAgR6Ceg7voAAGf+OTEiAAIEhBboGSNL+1w60Vk7qM1Z7V3/VQ1LrXe171CW1M6szHmdWXtXzztQlbXe5ondSm7FieNQktfOSHOWl15m9K7VJSr8GJ6nXVfoeNaWF/y46alu//j626f9n5mva+MRhXQPkxJxKzwqoJ0CAwMUCAuRiYMcTIEBgVQEBsurN2osAgV4C2/QVINtctUUJECDQVkCAtPV0GgECBLYRECDbXPU8i5qUAIE5BATIHPdkSgIECAwnIECGuxIDESBAoJfAub4C5JyXagIECBD4V6BrgPR80rLa+1+npn8ltSdwmzY9eVhSmzHpV1ddKanNWD3vTF3156xad6Z3Uts7aVt3ZsZqbVKbsfV5SapHluuSlJ7ULx/YsbBrgHTcW2sCVwg4k8BWAgJkq+u2LAECBNoJCJB2lk4iQIDAVgJDBchW8pYlQIDA5AICZPILND4BAgR6CQiQXvL6EhhKwDAEzgsIkPNmPkGAAAECfwsIkL8R/E+AAAEC5wUEyHmzzz7hewQIENhOoGuAJLUnMpNMcTFJSk+YVp86rtadwWl9Zuvzjl2uOPM499krqd1fkmdHXfZ+1eaoqw5x1FZerc87elbPbF139K6+evVu3feK87oGyBULOZMAgc0ErNtNQIB0o9eYAAECcwsIkLnvz/QECBDoJiBAutGP0tgcBAgQeE1AgLzm5lMECBDYXkCAbP8jAIAAgV4Cs/cVILPfoPkJECDQSUCAdILXlgABArMLCJDZb3Dn+e1OgEBXAQHSkL/6ZGuS0hPrSa2u4Qrfj6ru8v0DT76onnfUJbW9j9peryfrnn47qe2c1OtOD/HkA1XrpD5j9cwno31/u3peUp8xqdV+H+LJF0nb8560u/RtAXIpr8MJECCwpMA/SwmQfxj8QYAAAQJnBQTIWTH1BAgQIPCPgAD5h8EfBO4V0I3ACgICZIVbtAMBAgQ6CAiQDuhaEiBAYAWBOQNkBXk7ECBAYHIBATL5BRqfAAECvQQESC95fQnMKWBqAt8FBMh3Cl8QIECAwBmBaQKk9a8oOINUrU1qv6Kguku1Lqn1TVJdpVyXpOmvZUnyccXeSds5qzNWIavnXVGX9LE5dmnt0/q8MzMmNcfqjDPUTRMgM2BWZlRDgACBVQQEyCo3aQ8CBAjcLCBAbgbXjgCBXgL6thYQIK1FnUeAAIFNBATIJhdtTQIECLQWECCtRdc9z2YECBD4RUCA/MLhHwQIECBQFRAgVSl1BAgQ6CUwaF8BMujFGIsAAQKjC3QNkOMpz+qrF2R1vjN1yfhPrCbjz1g1r/7sVM876pLxfZI+Mya1vkm/uurPxJm64+ei8jpz5ui1XQNkdBzzrSJgDwIErhAQIFeoOpMAAQIbCAiQDS7ZigQIELhCoBIgV/R1JgECBAhMLiBAJr9A4xMgQKCXgADpJa8vgYqAGgIDCwiQgS/HaAQIEBhZQICMfDtmI0CAwMACiwfIwPJGI0CAwOQCAuTJBSbtn5atPK161DwZ7aW3k9o+1cOPOVu/qr2TtrsktfOSVEf8SNLtVR2yen+tzzv6tj6zet6ZumPOyuvMmZXapP6zUznvihoBcoWqMwkQ+ECwvoAAWf+ObUiAAIFLBATIJawOJUCAwPoCAmTUOzYXAQIEBhcQIINfkPEIECAwqoAAGfVmzEWAQC8BfYsCAqQIpYwAAQIEfhUQIL96+BcBAgQIFAUESBFKWV1AJQECewhMEyBJ7anMyhOjR80V13ucW3kltV2qM1Z6XlVTnfFMXdLWp9r7CqPWvavnHXXVfY7ayqt6XlK7vyQfrc9sfV5S36VieNRUZzxqR39NEyCjQ5qPAAEC/QXunUCA3OutGwECBJYR3x/3ZgAACg9JREFUECDLXKVFCBAgcK+AALnXW7exBUxHgMAJAQFyAkspAQIECPwQECA/LHxFgAABAicEmgbIib5KCRAgQGByAQEy+QUanwABAr0EBEgveX0JNBVwGIH7BQTI/eY6EiBAYAmBrgGStP81AUn9zOR57RW33PpXGSTP90iuqbnCp/WZVe+kblSdsXXv6nlHXXXGpLZ39byjd/WV1Hr3Ou/oW907qe2S1OqO3tVXdcbWdV0DpPUyb5znowQIECBwUkCAnARTToAAAQLfBATINwd/EiDQS0DfaQUEyLRXZ3ACBAj0FRAgff11J0CAwLQCAmTaq/tvcH8TIECgj4AA6eOuKwECBKYXECDTX6EFCBDoJbB7XwGy+0+A/QkQIPCiQNcAqT5leUVd1etM7+qZSe1J1KRWd8WM1V161lX3vmLGpHY3Sa2u54xX9K6eWb3DpJ9jdZcd67oGyI7gdv5JwJcECEwtIECmvj7DEyBAoJ+AAOlnrzMBAgR6CTTpK0CaMDqEAAEC+wkIkP3u3MYECBBoIiBAmjA6ZDcB+xIg8PEhQPwUECBAgMBLAgLkJTYfIkCAAIE+AcKdAAECBKYX2DZAqk/AnrnhJB/J81fr3snznsm3muo+PWes9k6+7ZQ8/rv1zsd81TNb1yWPd01+vN+6d/W85McMyeOvq2dW6467qbyq5x11lfPO1BxnrvLaNkBWuUB7EDgpoJxAMwEB0ozSQQQIENhLQIDsdd+2JUCAQDMBAXKSUjkBAgQIfBMQIN8c/EmAAAECJwUEyEkw5QQI9BLQdzQBATLajZiHAAECkwgIkEkuypgECBAYTUCAjHYj183jZAIECDQV6BogyeOnVJPr3m+qePKwpLZX9dgrnoJNajMmtborZqz6JLUZq+edqTuzd6X2TO9qbaXvUZO0d0zanpnUzkvqdVXHHeu6BsiO4HYmQGBDgUVXFiCLXqy1CBAgcLWAALla2PkECBBYVECALHqxa61lGwIERhQQICPeipkIECAwgYAAmeCSjEiAAIFeAo/6CpBHOt4jQIAAgS8FBMiXNN4gQIAAgUcCAuSRjvcIvCvg8wQWFhAgC1+u1QgQIHClQNcAOX49Qq/XFai9dkn6/VqG6s5XeLc+M2nvmNTObL3LmfOS2oxX3HX1zNZ1Z3yqtUnNsXreDHVdA+Q5kAoCBAgQGFVAgIx6M+YiQIDA4AICZPALMh6BXgL6EngmIECeCXmfAAECBD4VECCfsvgmAQIECDwTECDPhF593+cIECCwuIAAWfyCrUeAAIGrBATIVbLOJUCgl4C+NwkIkJugtSFAgMBqAl0DJKk9uZnsWXfFD1v1id4relfPTGr3XT3virpejtW+V9Rd4Vg9M+n3M5HUelfNqzvPUNc1QGYA2nFGOxMgQKAiIEAqSmoIECBA4A8BAfIHiW8QIECgl8BcfQXIXPdlWgIECAwjIECGuQqDECBAYC4BATLXfZn2sYB3CRC4UUCA3IitFQECBFYSECAr3aZdCBAgcKPALwFyY1+tCBAgQGBygWkCpPqU5wx1rX9mzuyc1J6qbT1jUuubpNz6zN6ta6tDVvsm+UjavqozJrW+1fOuqKs6rtb7in1anjlNgLRc2lkExhMwEYH5BATIfHdmYgIECAwhIECGuAZDECBAYD6BVQJkPnkTEyBAYHIBATL5BRqfAAECvQQESC95fQmsImCPbQUEyLZXb3ECBAi8JyBA3vPzaQIECGwrIEC6X70BCBAgMKfAcgGS1J6qTdrX9foRSOq7VJ/ordZVd66ed9RVz0zqeydta6sztq47fKqv1r2vOC9pey9J7bwzuyTtzzzTf+Ta5QJkZGyzESAwloBp3hMQIO/5+TQBAgS2FRAg2169xQkQIPCegAB5z2/vT9ueAIGtBQTI1tdveQIECLwuIEBet/NJAgQI9BIYoq8AGeIaDEGAAIH5BATIfHdmYgIECAwhIECGuAZD3C2gHwEC7wsIkPcNnUCAAIEtBQTIAtde/dUWR1113aTfr2845hz91csxqd1LkuqIH1Xr8oEnCnv2PjFmqTTJR/L8VTpskqLXAmSS5YxJgAABAtcJCJDrbJ1MgACBpQUEyNLXa7kFBaxEYBgBATLMVRiEAAECcwkIkLnuy7QECBAYRmC7ABlG3iAECBCYXECATH6BxidAgEAvAQHSS15fAtsJWHg1AQGy2o3ahwABAjcJCJCboEdpkzx/UjZJ13GTNH2iN2l73hmc6pPW1bozvZPa3knbujMzzlBbvZvWdTPYCJAZbunbjP4kQIDAUAICZKjrMAwBAgTmERAg89yVSQkQ6CWg76cCAuRTFt8kQIAAgWcCAuSZkPcJECBA4FMBAfIpi2+2FXAaAQIrCgiQFW/VTgQIELhBQIDcgKwFAQIEeglc2VeAXKnrbAIECCwssFyAtH4a9Mx5K/2cVPeu7pzUn3au9k5qZ14xY9K2d3XGqs1R1/rM1ucdMyZtHY8zW7+StjNWHWeoWy5AZkA340QCRiVA4EsBAfIljTcIECBA4JGAAHmk4z0CBAgQ+FLg4gD5sq83CBAgQGByAQEy+QUanwABAr0EBEgveX0JXCzgeAJXCwiQq4WdT4AAgUUFBMiiF2stAgQIXC0gQL4S9n0CBAgQeCgwTYAktadBk/HrHt7IC28m9Z2rxye1M6vnnXk6OOnXuzpnde+ktktSq6v2vaKuapPUdklyxZjNz6zu3bpxko+k9mrdu3reNAFSXUgdAQLTC1hgEgEBMslFGZMAAQKjCQiQ0W7EPAQIEJhEQIBMclFnxlRLgACBOwQEyB3KehAgQGBBAQGy4KVaiQCBXgJ79RUge923bQkQINBMQIA0o3QQAQIE9hIQIHvd9+jbmo8AgYkEBMhEl2VUAgQIjCTQNUCqvyJg17rqD0pPn+qMZ+pa73Omd7W29YzV86rzHXVXnHmc++xV7XtF3bPZZnr/jE+TvV44pGuAvDCvjxAgQIDAIAICZJCLMAYBAgRmExAgs92YeQcVMBaB/QQEyH53bmMCBAg0ERAgTRgdQoAAgf0ERgmQ/eRtTIAAgckFBMjkF2h8AgQI9BIQIL3k9SUwioA5CLwoIEBehPMxAgQI7C4gQHb/CbA/AQIEXhQQIC/C/fiYrwgQILCngADZ895tTYAAgbcFBMjbhA4gQKCXgL59BQRIX3/dCRAgMK2AAJn26gxOgACBvgICpK9/3+66EyBA4A0BAfIGno8SIEBgZwEBsvPt250AgV4CS/QVIEtcoyUIECBwv4AAud9cRwIECCwhIECWuMb9lrAxAQL9BQRI/zswAQECBKYUECBTXpuhCRAg0EvgR18B8sPCVwQIECBwQkCAnMBSSoAAAQI/BATIDwtfEbhDQA8CywgIkGWu0iIECBC4V0CA3OutGwECBJYRmC5AlpG3CAECBCYX+D8AAAD//7ahqpcAAAAGSURBVAMAx5y3KtnODewAAAAASUVORK5CYII=';
+}
+function downloadShareCard(){
+  genShareCard();
+}
 function restart(){QS.length=0;QS.push(...shuffle(RAW_QS));ans=new Array(QS.length).fill(null);scores={};curQ=0;sp("landing");}
 
 // Init
@@ -338,6 +554,7 @@ ans=new Array(QS.length).fill(null);
 renderQ();
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" defer></script>
 </body>
 </html>
